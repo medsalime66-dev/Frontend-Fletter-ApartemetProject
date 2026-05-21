@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../core/theme/app_colors.dart';
+
 class AppTextField extends StatelessWidget{
 
   final TextEditingController? controller;
@@ -16,6 +18,8 @@ class AppTextField extends StatelessWidget{
 
   final int? maxLength;
 
+  final int maxLines;
+
   final String? Function(String?)? validator;
 
   final void Function(String)? onChanged;
@@ -29,6 +33,7 @@ class AppTextField extends StatelessWidget{
     this.isPhone=false,
     this.isNumeric=false,
     this.maxLength,
+    this.maxLines=1,
     this.validator,
     this.onChanged,
   });
@@ -46,21 +51,81 @@ class AppTextField extends StatelessWidget{
 
       onChanged:onChanged,
 
+      maxLength:maxLength,
+
+      maxLines:maxLines,
+
       keyboardType:
 
-      isPhone||isNumeric
+      isPhone
+
+          ?TextInputType.phone
+
+          :isNumeric
 
           ?TextInputType.number
 
-          :TextInputType.text,
+          :maxLines>1
 
-      maxLength:maxLength,
+          ?TextInputType.multiline
+
+          :TextInputType.text,
 
       decoration:InputDecoration(
 
         labelText:label,
 
-        prefixIcon:Icon(icon),
+        alignLabelWithHint:
+        maxLines>1,
+
+        prefixIcon:maxLines>1
+
+            ?Padding(
+
+          padding:
+          const EdgeInsets.only(
+            bottom:70,
+          ),
+
+          child:Icon(icon),
+        )
+
+            :Icon(icon),
+
+        filled:true,
+
+        fillColor:Colors.white,
+
+        border:OutlineInputBorder(
+
+          borderRadius:
+          BorderRadius.circular(18),
+
+          borderSide:BorderSide.none,
+        ),
+
+        enabledBorder:
+        OutlineInputBorder(
+
+          borderRadius:
+          BorderRadius.circular(18),
+
+          borderSide:BorderSide(
+            color:AppColors.border,
+          ),
+        ),
+
+        focusedBorder:
+        OutlineInputBorder(
+
+          borderRadius:
+          BorderRadius.circular(18),
+
+          borderSide:BorderSide(
+            color:AppColors.primary,
+            width:1.5,
+          ),
+        ),
       ),
     );
   }

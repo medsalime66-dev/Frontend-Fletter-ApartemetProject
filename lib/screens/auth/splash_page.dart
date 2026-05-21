@@ -8,8 +8,6 @@ import '../home/home_page.dart';
 
 import '../../widgets/owner/owner_home_page.dart';
 
-import '../worker/worker_home_page.dart';
-
 class SplashPage extends StatefulWidget{
 
   const SplashPage({super.key});
@@ -75,21 +73,6 @@ class _SplashPageState extends State<SplashPage>{
       return;
     }
 
-    ///worker
-    if(role=='WORKER'){
-
-      Navigator.pushReplacement(
-
-        context,
-
-        MaterialPageRoute(
-
-          builder:(_)=>const WorkerHomePage(),
-        ),
-      );
-
-      return;
-    }
 
     ///client
     Navigator.pushReplacement(
@@ -151,7 +134,7 @@ class _SplashPageState extends State<SplashPage>{
 
                 size:55,
 
-                color:Colors.white,
+                color:Colors.amber,
               ),
             ),
 

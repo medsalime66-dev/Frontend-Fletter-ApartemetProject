@@ -7,7 +7,7 @@ import '../../core/theme/app_text_styles.dart';
 import '../../models/apartment_model.dart';
 
 import '../../repositories/apartment_repository.dart';
-
+import '../../screens/owner/create_apartment_page.dart';
 import '../../services/auth_service.dart';
 
 import '../../widgets/apartment/apartment_card.dart';
@@ -232,7 +232,19 @@ class _OwnerHomePageState
         backgroundColor:
         AppColors.primary,
 
-        onPressed:(){},
+        onPressed:(){
+
+          Navigator.push(
+
+            context,
+
+            MaterialPageRoute(
+
+              builder:(_)=>
+              const CreateApartmentPage(),
+            ),
+          );
+        },
 
         icon:const Icon(
           Icons.add,

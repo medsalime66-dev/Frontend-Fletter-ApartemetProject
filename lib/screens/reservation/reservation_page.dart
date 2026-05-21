@@ -10,7 +10,7 @@ import '../../services/reservation_service.dart';
 
 import '../confirmation/confirmation_page.dart';
 
-class ReservationPage extends StatefulWidget{
+class ReservationPage extends StatefulWidget {
 
   final ApartmentModel apartment;
 
@@ -20,36 +20,127 @@ class ReservationPage extends StatefulWidget{
   });
 
   @override
-  State<ReservationPage> createState()=>
+  State<ReservationPage> createState() =>
       _ReservationPageState();
 }
 
 class _ReservationPageState
-    extends State<ReservationPage>{
+    extends State<ReservationPage> {
 
-  bool isLoading=false;
+  bool isLoading = false;
 
-  ///confirm reservation
-  Future<void> reserve()async{
+  DateTime? startDate;
 
-    setState((){
-      isLoading=true;
-    });
+  DateTime? endDate;
 
-    try{
+  /// pick reservation dates
+  Future<void> pickDateRange() async {
 
-      final success=
-      await ReservationService
-          .createReservation(
-        apartmentId:
-        widget.apartment.id,
+    final picked =
+    await showDateRangePicker(
+
+      context: context,
+
+      firstDate: DateTime.now(),
+
+      lastDate: DateTime(2030),
+
+      builder: (context, child) {
+
+        return Theme(
+
+          data: Theme.of(context).copyWith(
+
+            colorScheme: const ColorScheme.light(
+
+              primary: AppColors.primary,
+            ),
+          ),
+
+          child: child!,
+        );
+      },
+    );
+
+    if (picked != null) {
+
+      setState(() {
+
+        startDate = picked.start;
+
+        endDate = picked.end;
+      });
+    }
+  }
+
+  /// calculate nights
+  int get nights {
+
+    if (startDate == null || endDate == null) {
+      return 0;
+    }
+
+    return endDate!
+        .difference(startDate!)
+        .inDays;
+  }
+
+  /// calculate total
+  double get total {
+
+    return nights *
+        widget.apartment.pricePerNight;
+  }
+
+  /// confirm reservation
+  Future<void> reserve() async {
+
+    if (startDate == null ||
+        endDate == null) {
+
+      ScaffoldMessenger.of(context)
+          .showSnackBar(
+
+        const SnackBar(
+
+          content: Text(
+            'Please select reservation dates',
+          ),
+        ),
       );
 
-      if(!mounted){
+      return;
+    }
+
+    setState(() {
+      isLoading = true;
+    });
+
+    try {
+
+      final success =
+      await ReservationService
+          .createReservation(
+
+        apartmentId:
+        widget.apartment.id,
+
+        startDate:
+        startDate!
+            .toIso8601String()
+            .split('T')[0],
+
+        endDate:
+        endDate!
+            .toIso8601String()
+            .split('T')[0],
+      );
+
+      if (!mounted) {
         return;
       }
 
-      if(success){
+      if (success) {
 
         Navigator.pushReplacement(
 
@@ -57,7 +148,7 @@ class _ReservationPageState
 
           MaterialPageRoute(
 
-            builder:(_)=>
+            builder: (_) =>
             const ConfirmationPage(),
           ),
         );
@@ -69,87 +160,85 @@ class _ReservationPageState
           .showSnackBar(
 
         const SnackBar(
-          content:Text(
+
+          content: Text(
             'Reservation failed',
           ),
         ),
       );
 
-    }catch(e){
+    } catch (e) {
 
       ScaffoldMessenger.of(context)
           .showSnackBar(
 
         SnackBar(
-          content:Text(
+          content: Text(
             e.toString(),
           ),
         ),
       );
 
-    }finally{
+    } finally {
 
-      if(mounted){
+      if (mounted) {
 
-        setState((){
-          isLoading=false;
+        setState(() {
+          isLoading = false;
         });
       }
     }
   }
 
   @override
-  Widget build(BuildContext context){
-
-    final total=
-        widget.apartment.pricePerNight;
+  Widget build(BuildContext context) {
 
     return Scaffold(
 
-      appBar:AppBar(
+      appBar: AppBar(
 
-        title:const Text(
+        title: const Text(
           'Reservation',
         ),
       ),
 
-      body:Padding(
+      body: SingleChildScrollView(
 
-        padding:const EdgeInsets.all(
+        padding: const EdgeInsets.all(
           AppSpacing.screen,
         ),
 
-        child:Column(
+        child: Column(
 
           crossAxisAlignment:
           CrossAxisAlignment.start,
 
-          children:[
+          children: [
 
-//title
+            /// title
             Text(
               widget.apartment.title,
-              style:AppTextStyles.h1,
+              style: AppTextStyles.h1,
             ),
 
-            const SizedBox(height:12),
+            const SizedBox(height: 12),
 
-//location
+            /// location
             Row(
 
-              children:[
+              children: [
 
                 const Icon(
                   Icons.location_on,
-                  size:18,
-                  color:AppColors.primary,
+                  size: 18,
+                  color: AppColors.primary,
                 ),
 
-                const SizedBox(width:6),
+                const SizedBox(width: 6),
 
                 Expanded(
 
-                  child:Text(
+                  child: Text(
 
                     "${widget.apartment.city}, ${widget.apartment.district}",
 
@@ -160,58 +249,130 @@ class _ReservationPageState
               ],
             ),
 
-            const SizedBox(height:28),
+            const SizedBox(height: 28),
 
-//summary
+            /// date picker
+            InkWell(
+
+              onTap: pickDateRange,
+
+              borderRadius:
+              BorderRadius.circular(22),
+
+              child: Container(
+
+                padding:
+                const EdgeInsets.all(18),
+
+                decoration: BoxDecoration(
+
+                  color: AppColors.surface,
+
+                  borderRadius:
+                  BorderRadius.circular(22),
+
+                  border: Border.all(
+                    color: AppColors.border,
+                  ),
+                ),
+
+                child: Row(
+
+                  children: [
+
+                    const Icon(
+                      Icons.date_range,
+                    ),
+
+                    const SizedBox(width: 14),
+
+                    Expanded(
+
+                      child: Text(
+
+                        startDate == null
+
+                            ? 'Select reservation dates'
+
+                            : '${startDate!.toString().split(' ')[0]} → ${endDate!.toString().split(' ')[0]}',
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 28),
+
+            /// summary
             Container(
 
               padding:
               const EdgeInsets.all(22),
 
-              decoration:BoxDecoration(
+              decoration: BoxDecoration(
 
-                color:AppColors.surface,
+                color: AppColors.surface,
 
                 borderRadius:
                 BorderRadius.circular(24),
 
-                border:Border.all(
-                  color:AppColors.border,
+                border: Border.all(
+                  color: AppColors.border,
                 ),
               ),
 
-              child:Column(
+              child: Column(
 
-                children:[
+                children: [
 
-//price
+                  /// price
                   Row(
 
                     mainAxisAlignment:
                     MainAxisAlignment.spaceBetween,
 
-                    children:[
+                    children: [
 
                       const Text(
                         'Price Per Night',
                       ),
 
                       Text(
-
                         "${widget.apartment.pricePerNight} MRU",
                       ),
                     ],
                   ),
 
-                  const SizedBox(height:18),
+                  const SizedBox(height: 18),
 
-//wallet
+                  /// nights
                   Row(
 
                     mainAxisAlignment:
                     MainAxisAlignment.spaceBetween,
 
-                    children:[
+                    children: [
+
+                      const Text(
+                        'Nights',
+                      ),
+
+                      Text(
+                        nights.toString(),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 18),
+
+                  /// wallet
+                  Row(
+
+                    mainAxisAlignment:
+                    MainAxisAlignment.spaceBetween,
+
+                    children: [
 
                       const Text(
                         'Wallet',
@@ -223,21 +384,21 @@ class _ReservationPageState
                     ],
                   ),
 
-                  const SizedBox(height:18),
+                  const SizedBox(height: 18),
 
-//total
+                  /// total
                   Row(
 
                     mainAxisAlignment:
                     MainAxisAlignment.spaceBetween,
 
-                    children:[
+                    children: [
 
                       const Text(
 
                         'Total',
 
-                        style:TextStyle(
+                        style: TextStyle(
                           fontWeight:
                           FontWeight.bold,
                         ),
@@ -247,10 +408,13 @@ class _ReservationPageState
 
                         "$total MRU",
 
-                        style:const TextStyle(
+                        style: const TextStyle(
+
                           fontWeight:
                           FontWeight.bold,
-                          fontSize:18,
+
+                          fontSize: 22,
+
                           color:
                           AppColors.primaryDark,
                         ),
@@ -261,27 +425,27 @@ class _ReservationPageState
               ),
             ),
 
-            const Spacer(),
+            const SizedBox(height: 40),
 
-//button
+            /// button
             SizedBox(
 
-              width:double.infinity,
+              width: double.infinity,
 
-              height:56,
+              height: 58,
 
-              child:ElevatedButton(
+              child: ElevatedButton(
 
                 onPressed:
                 isLoading
-                    ?null
-                    :reserve,
+                    ? null
+                    : reserve,
 
-                child:Text(
+                child: Text(
 
                   isLoading
-                      ?'Loading...'
-                      :'Confirm Reservation',
+                      ? 'Loading...'
+                      : 'Confirm Reservation',
                 ),
               ),
             ),

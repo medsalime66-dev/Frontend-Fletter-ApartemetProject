@@ -2,34 +2,42 @@ import 'package:dio/dio.dart';
 
 import '../core/network/api_client.dart';
 
-class ReservationService{
+class ReservationService {
 
-  ///create reservation
+  /// create reservation
   static Future<bool> createReservation({
     required int apartmentId,
-  })async{
+    required String startDate,
+    required String endDate,
+  }) async {
 
-    try{
+    try {
 
-      final response=
+      final response =
       await ApiClient.dio.post(
+
         '/reservations',
-        data:{
-          'apartmentId':apartmentId,
+
+        data: {
+
+          'apartmentId': apartmentId,
+          'startDate': startDate,
+          'endDate': endDate,
         },
       );
 
-      return response.statusCode==200||
-          response.statusCode==201;
+      return response.statusCode == 200 ||
+          response.statusCode == 201;
 
-    }on DioException catch(e){
+    } on DioException catch (e) {
 
       throw Exception(
-        e.response?.data['message']??
+
+        e.response?.data['message'] ??
             'Reservation failed',
       );
 
-    }catch(e){
+    } catch (e) {
 
       throw Exception(
         'Unexpected reservation error',
