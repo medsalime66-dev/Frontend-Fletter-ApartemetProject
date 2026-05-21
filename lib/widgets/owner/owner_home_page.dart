@@ -53,21 +53,9 @@ class _OwnerHomePageState
 
     try{
 
-      final phone=
-      await AuthService.getPhone();
-
-      if(phone==null){
-
-        setState((){
-          isLoading=false;
-        });
-
-        return;
-      }
-
-      final result=
+      final result =
       await repository
-          .getOwnerApartments(phone);
+          .getOwnerApartments();
 
       setState((){
 

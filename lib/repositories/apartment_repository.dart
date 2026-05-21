@@ -74,28 +74,18 @@ class ApartmentRepository{
 
 //get owner apartments
   Future<List<ApartmentModel>>
-  getOwnerApartments(
-      String ownerPhone,
-      )async{
+  getOwnerApartments() async {
 
-    try{
+    try {
 
-      final apartments=
-      await _service.getApartments();
+      return await _service
+          .getOwnerApartments();
 
-      return apartments.where((apartment){
-
-        return apartment.ownerPhone==
-            ownerPhone;
-
-      }).toList();
-
-    }catch(e){
+    } catch (e) {
 
       throw Exception(
         'Failed to load owner apartments',
       );
-
     }
   }
 
