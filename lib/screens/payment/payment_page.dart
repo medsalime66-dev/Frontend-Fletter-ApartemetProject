@@ -13,39 +13,49 @@ import '../../widgets/common/primary_button.dart';
 
 import '../../widgets/payment/wallet_option_card.dart';
 
+import '../../services/reservation_service.dart';
+
 import '../confirmation/confirmation_page.dart';
 
-class PaymentPage extends StatefulWidget{
+class PaymentPage extends StatefulWidget {
 
   final ApartmentModel apartment;
 
   final int total;
 
+  final DateTime startDate;
+
+  final DateTime endDate;
+
   const PaymentPage({
     super.key,
     required this.apartment,
     required this.total,
+    required this.startDate,
+    required this.endDate,
   });
 
   @override
-  State<PaymentPage> createState()=>
+  State<PaymentPage> createState() =>
       _PaymentPageState();
 }
 
 class _PaymentPageState
-    extends State<PaymentPage>{
+    extends State<PaymentPage> {
 
-  String selectedWallet=
+  String selectedWallet =
       mockWallets.first.name;
 
-  final phoneController=
+  final phoneController =
   TextEditingController();
 
-  final codeController=
+  final codeController =
   TextEditingController();
+
+  bool isLoading = false;
 
   @override
-  void dispose(){
+  void dispose() {
 
     phoneController.dispose();
     codeController.dispose();
@@ -53,119 +63,225 @@ class _PaymentPageState
     super.dispose();
   }
 
+  Future<void> confirmPayment() async {
+
+    if (phoneController.text.isEmpty ||
+        codeController.text.isEmpty) {
+
+      ScaffoldMessenger.of(context)
+          .showSnackBar(
+
+        const SnackBar(
+
+          content: Text(
+            'Please fill all fields',
+          ),
+        ),
+      );
+
+      return;
+    }
+
+    setState(() {
+      isLoading = true;
+    });
+
+    try {
+
+      /// simulate payment success
+
+      await Future.delayed(
+        const Duration(seconds: 2),
+      );
+
+      /// create reservation ONLY after payment
+
+      final success =
+      await ReservationService
+          .createReservation(
+
+        apartmentId:
+        widget.apartment.id,
+
+        startDate:
+        widget.startDate
+            .toIso8601String()
+            .split('T')[0],
+
+        endDate:
+        widget.endDate
+            .toIso8601String()
+            .split('T')[0],
+      );
+
+      if (!mounted) return;
+
+      if (success) {
+
+        Navigator.pushAndRemoveUntil(
+
+          context,
+
+          MaterialPageRoute(
+
+            builder: (_) =>
+            const ConfirmationPage(),
+          ),
+
+              (route) => false,
+        );
+
+        return;
+      }
+
+      ScaffoldMessenger.of(context)
+          .showSnackBar(
+
+        const SnackBar(
+
+          content: Text(
+            'Reservation failed',
+          ),
+        ),
+      );
+
+    } catch (e) {
+
+      ScaffoldMessenger.of(context)
+          .showSnackBar(
+
+        SnackBar(
+          content: Text(
+            e.toString(),
+          ),
+        ),
+      );
+
+    } finally {
+
+      if (mounted) {
+
+        setState(() {
+          isLoading = false;
+        });
+      }
+    }
+  }
+
   @override
-  Widget build(BuildContext context){
+  Widget build(BuildContext context) {
 
     return Scaffold(
 
-      appBar:AppBar(
+      appBar: AppBar(
 
-        title:const Text(
+        title: const Text(
           'Payment',
-          style:AppTextStyles.h2,
+          style: AppTextStyles.h2,
         ),
       ),
 
-      body:ListView(
+      body: ListView(
 
-        padding:const EdgeInsets.all(
+        padding: const EdgeInsets.all(
           AppSpacing.screen,
         ),
 
-        children:[
+        children: [
 
-//card
+          /// card
           Container(
 
-            padding:const EdgeInsets.all(24),
+            padding:
+            const EdgeInsets.all(24),
 
-            decoration:BoxDecoration(
+            decoration: BoxDecoration(
 
-              color:AppColors.text,
+              color: AppColors.text,
 
               borderRadius:
               BorderRadius.circular(28),
             ),
 
-            child:Column(
+            child: Column(
 
               crossAxisAlignment:
               CrossAxisAlignment.start,
 
-              children:[
+              children: [
 
                 const Text(
 
                   'Total Amount',
 
-                  style:TextStyle(
-                    color:Colors.white70,
+                  style: TextStyle(
+                    color: Colors.white70,
                   ),
                 ),
 
-                const SizedBox(height:8),
+                const SizedBox(height: 8),
 
                 Text(
 
                   '${widget.total} MRU',
 
-                  style:const TextStyle(
+                  style: const TextStyle(
 
-                    color:Colors.white,
+                    color: Colors.white,
 
-                    fontSize:34,
+                    fontSize: 34,
 
                     fontWeight:
                     FontWeight.w900,
                   ),
                 ),
 
-                const SizedBox(height:12),
+                const SizedBox(height: 12),
 
                 Text(
 
                   'Owner Wallet: ${widget.apartment.walletCode}',
 
-                  style:const TextStyle(
-                    color:Colors.white70,
+                  style: const TextStyle(
+                    color: Colors.white70,
                   ),
                 ),
               ],
             ),
           ),
 
-          const SizedBox(height:28),
+          const SizedBox(height: 28),
 
-//wallets
+          /// wallets
           const Text(
             'Wallet',
-            style:AppTextStyles.h2,
+            style: AppTextStyles.h2,
           ),
 
-          const SizedBox(height:14),
+          const SizedBox(height: 14),
 
-          ...mockWallets.map((wallet){
+          ...mockWallets.map((wallet) {
 
             return Padding(
 
               padding:
               const EdgeInsets.only(
-                bottom:12,
+                bottom: 12,
               ),
 
-              child:WalletOptionCard(
+              child: WalletOptionCard(
 
-                name:wallet.name,
+                name: wallet.name,
 
                 selected:
-                selectedWallet==
+                selectedWallet ==
                     wallet.name,
 
-                onTap:(){
+                onTap: () {
 
-                  setState((){
+                  setState(() {
 
-                    selectedWallet=
+                    selectedWallet =
                         wallet.name;
                   });
                 },
@@ -173,62 +289,58 @@ class _PaymentPageState
             );
           }),
 
-          const SizedBox(height:20),
+          const SizedBox(height: 20),
 
-//phone
+          /// phone
           AppTextField(
 
             controller:
             phoneController,
 
-            label:'Phone Number',
+            label:
+            'Phone Number',
 
             icon:
             Icons.phone_outlined,
 
-            isPhone:true,
+            isPhone: true,
           ),
 
-          const SizedBox(height:14),
+          const SizedBox(height: 14),
 
-//code
+          /// code
           AppTextField(
 
             controller:
             codeController,
 
-            label:'B-Pay Code',
+            label:
+            'B-Pay Code',
 
             icon:
             Icons.password_outlined,
 
-            isPassword:true,
+            isPassword: true,
 
-            isNumeric:true,
+            isNumeric: true,
 
-            maxLength:4,
+            maxLength: 4,
           ),
 
-          const SizedBox(height:28),
+          const SizedBox(height: 28),
 
-//button
+          /// button
           PrimaryButton(
 
-            text:'Confirm Payment',
+            text:
+            isLoading
+                ? 'Processing...'
+                : 'Confirm Payment',
 
-            onPressed:(){
-
-              Navigator.pushReplacement(
-
-                context,
-
-                MaterialPageRoute(
-
-                  builder:(_)=>
-                  const ConfirmationPage(),
-                ),
-              );
-            },
+            onPressed:
+            isLoading
+                ? null
+                : confirmPayment,
           ),
         ],
       ),

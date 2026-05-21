@@ -6,12 +6,9 @@ import '../../core/theme/app_text_styles.dart';
 
 import '../../models/apartment_model.dart';
 
-import '../../services/reservation_service.dart';
-
-import '../confirmation/confirmation_page.dart';
+import '../payment/payment_page.dart';
 
 class ReservationPage extends StatefulWidget {
-
   final ApartmentModel apartment;
 
   const ReservationPage({
@@ -26,8 +23,6 @@ class ReservationPage extends StatefulWidget {
 
 class _ReservationPageState
     extends State<ReservationPage> {
-
-  bool isLoading = false;
 
   DateTime? startDate;
 
@@ -52,7 +47,6 @@ class _ReservationPageState
           data: Theme.of(context).copyWith(
 
             colorScheme: const ColorScheme.light(
-
               primary: AppColors.primary,
             ),
           ),
@@ -92,8 +86,8 @@ class _ReservationPageState
         widget.apartment.pricePerNight;
   }
 
-  /// confirm reservation
-  Future<void> reserve() async {
+  /// continue to payment
+  void continueToPayment() {
 
     if (startDate == null ||
         endDate == null) {
@@ -112,82 +106,24 @@ class _ReservationPageState
       return;
     }
 
-    setState(() {
-      isLoading = true;
-    });
+    Navigator.push(
 
-    try {
+      context,
 
-      final success =
-      await ReservationService
-          .createReservation(
+      MaterialPageRoute(
 
-        apartmentId:
-        widget.apartment.id,
+        builder: (_) => PaymentPage(
 
-        startDate:
-        startDate!
-            .toIso8601String()
-            .split('T')[0],
+          apartment: widget.apartment,
 
-        endDate:
-        endDate!
-            .toIso8601String()
-            .split('T')[0],
-      );
+          total: total.toInt(),
 
-      if (!mounted) {
-        return;
-      }
+          startDate: startDate!,
 
-      if (success) {
-
-        Navigator.pushReplacement(
-
-          context,
-
-          MaterialPageRoute(
-
-            builder: (_) =>
-            const ConfirmationPage(),
-          ),
-        );
-
-        return;
-      }
-
-      ScaffoldMessenger.of(context)
-          .showSnackBar(
-
-        const SnackBar(
-
-          content: Text(
-            'Reservation failed',
-          ),
+          endDate: endDate!,
         ),
-      );
-
-    } catch (e) {
-
-      ScaffoldMessenger.of(context)
-          .showSnackBar(
-
-        SnackBar(
-          content: Text(
-            e.toString(),
-          ),
-        ),
-      );
-
-    } finally {
-
-      if (mounted) {
-
-        setState(() {
-          isLoading = false;
-        });
-      }
-    }
+      ),
+    );
   }
 
   @override
@@ -437,15 +373,10 @@ class _ReservationPageState
               child: ElevatedButton(
 
                 onPressed:
-                isLoading
-                    ? null
-                    : reserve,
+                continueToPayment,
 
-                child: Text(
-
-                  isLoading
-                      ? 'Loading...'
-                      : 'Confirm Reservation',
+                child: const Text(
+                  'Continue To Payment',
                 ),
               ),
             ),
