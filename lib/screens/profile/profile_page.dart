@@ -1,469 +1,494 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../notifications/notification_page.dart';
-import '../../controllers/auth/auth_controller.dart';
-
-import '../../core/theme/app_colors.dart';
-import '../../core/theme/app_spacing.dart';
-import '../../core/theme/app_text_styles.dart';
-
-import '../../services/auth_service.dart';
-
+import 'package:shared_preferences/shared_preferences.dart';
+import '../reservation/my_reservations_page.dart';
 import '../auth/login_page.dart';
+import '../notifications/notification_page.dart';
 
-class ProfilePage
-    extends StatefulWidget {
+class ProfilePage extends StatelessWidget {
 
-  const ProfilePage({
-    super.key,
-  });
+  const ProfilePage({super.key});
 
-  @override
-  State<ProfilePage> createState() =>
-      _ProfilePageState();
-}
-
-class _ProfilePageState
-    extends State<ProfilePage> {
-
-  final authController =
-  Get.find<AuthController>();
-
-  String name = '';
-  String phone = '';
-  String role = '';
-
-  bool isLoading = true;
-
-  @override
-  void initState() {
-
-    super.initState();
-
-    loadUser();
-  }
-
-  /// load user
-  Future<void> loadUser() async {
-
-    final loadedName =
-    await AuthService.getName();
-
-    final loadedPhone =
-    await AuthService.getPhone();
-
-    final loadedRole =
-    await AuthService.getRole();
-
-    if (!mounted) {
-      return;
-    }
-
-    setState(() {
-
-      name =
-          loadedName ?? '';
-
-      phone =
-          loadedPhone ?? '';
-
-      role =
-          loadedRole ?? '';
-
-      isLoading = false;
-    });
-  }
-
-  /// logout
   Future<void> logout() async {
 
-    await authController
-        .logout();
+    final prefs =
+    await SharedPreferences.getInstance();
+
+    await prefs.clear();
 
     Get.offAll(
           () => const LoginPage(),
     );
   }
 
+  Future<String> getUserName() async {
+
+    final prefs =
+    await SharedPreferences.getInstance();
+
+    return prefs.getString('name')
+        ?? 'User';
+  }
+
   @override
   Widget build(BuildContext context) {
 
-    return Scaffold(
+    return FutureBuilder<String>(
 
-      backgroundColor:
-      AppColors.background,
+      future: getUserName(),
 
-      appBar: AppBar(
+      builder: (context, snapshot) {
 
-        title: const Text(
-          'Profile',
-        ),
-      ),
+        final userName =
+            snapshot.data ?? 'User';
 
-      body: isLoading
+        return Scaffold(
 
-          ? const Center(
-        child:
-        CircularProgressIndicator(),
-      )
+          backgroundColor: Colors.white,
 
-          : SingleChildScrollView(
+          body: SafeArea(
 
-        padding:
-        const EdgeInsets.all(
-          AppSpacing.screen,
-        ),
-
-        child: Column(
-
-          children: [
-
-            /// avatar
-            Container(
-
-              width: 110,
-              height: 110,
-
-              decoration:
-              BoxDecoration(
-
-                color:
-                AppColors.primary,
-
-                borderRadius:
-                BorderRadius.circular(
-                  30,
-                ),
-              ),
-
-              child: const Icon(
-
-                Icons.person,
-
-                size: 60,
-
-                color:
-                Colors.white,
-              ),
-            ),
-
-            const SizedBox(
-              height: 20,
-            ),
-
-            /// name
-            Text(
-
-              name,
-
-              style:
-              AppTextStyles.h1,
-            ),
-
-            const SizedBox(
-              height: 8,
-            ),
-
-            /// phone
-            Text(
-
-              phone,
-
-              style:
-              AppTextStyles.body,
-            ),
-
-            const SizedBox(
-              height: 12,
-            ),
-
-            /// role badge
-            Container(
+            child: SingleChildScrollView(
 
               padding:
-              const EdgeInsets.symmetric(
+              const EdgeInsets.all(20),
 
-                horizontal: 18,
-                vertical: 8,
-              ),
+              child: Column(
 
-              decoration:
-              BoxDecoration(
+                crossAxisAlignment:
+                CrossAxisAlignment.start,
 
-                color:
-                AppColors.primary
-                    .withValues(
-                  alpha: .15,
-                ),
+                children: [
 
-                borderRadius:
-                BorderRadius.circular(
-                  100,
-                ),
-              ),
+                  const Text(
 
-              child: Text(
+                    'Profile',
 
-                role,
+                    style: TextStyle(
 
-                style: const TextStyle(
+                      fontSize: 32,
 
-                  fontWeight:
-                  FontWeight.bold,
-
-                  color:
-                  AppColors.primaryDark,
-                ),
-              ),
-            ),
-
-            const SizedBox(
-              height: 36,
-            ),
-
-            /// settings section
-            _ProfileTile(
-
-              icon:
-              Icons.favorite_border,
-
-              title:
-              'Favorites',
-
-              subtitle:
-              'Saved apartments',
-
-              onTap: () {},
-            ),
-
-            _ProfileTile(
-
-              icon:
-              Icons.calendar_month,
-
-              title:
-              'Reservations',
-
-              subtitle:
-              'Your booking history',
-
-              onTap: () {
-
-                Get.to(
-                      () =>
-                  const NotificationPage(),
-                );
-              },
-            ),
-
-            _ProfileTile(
-
-              icon:
-              Icons.notifications_none,
-
-              title:
-              'Notifications',
-
-              subtitle:
-              'Latest updates',
-
-              onTap: () {},
-            ),
-
-            _ProfileTile(
-
-              icon:
-              Icons.settings_outlined,
-
-              title:
-              'Settings',
-
-              subtitle:
-              'App preferences',
-
-              onTap: () {},
-            ),
-
-            const SizedBox(
-              height: 40,
-            ),
-
-            /// logout button
-            SizedBox(
-
-              width:
-              double.infinity,
-
-              height: 58,
-
-              child: ElevatedButton.icon(
-
-                onPressed:
-                logout,
-
-                icon: const Icon(
-                  Icons.logout,
-                ),
-
-                label: const Text(
-                  'Logout',
-                ),
-
-                style:
-                ElevatedButton.styleFrom(
-
-                  backgroundColor:
-                  Colors.red,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _ProfileTile
-    extends StatelessWidget {
-
-  final IconData icon;
-
-  final String title;
-
-  final String subtitle;
-
-  final VoidCallback onTap;
-
-  const _ProfileTile({
-
-    required this.icon,
-
-    required this.title,
-
-    required this.subtitle,
-
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-
-    return Padding(
-
-      padding:
-      const EdgeInsets.only(
-        bottom: 14,
-      ),
-
-      child: Material(
-
-        color:
-        AppColors.surface,
-
-        borderRadius:
-        BorderRadius.circular(
-          22,
-        ),
-
-        child: InkWell(
-
-          borderRadius:
-          BorderRadius.circular(
-            22,
-          ),
-
-          onTap: onTap,
-
-          child: Padding(
-
-            padding:
-            const EdgeInsets.all(
-              18,
-            ),
-
-            child: Row(
-
-              children: [
-
-                Container(
-
-                  width: 52,
-                  height: 52,
-
-                  decoration:
-                  BoxDecoration(
-
-                    color:
-                    AppColors.primary
-                        .withValues(
-                      alpha: .12,
-                    ),
-
-                    borderRadius:
-                    BorderRadius.circular(
-                      16,
+                      fontWeight:
+                      FontWeight.bold,
                     ),
                   ),
 
-                  child: Icon(
-
-                    icon,
-
-                    color:
-                    AppColors.primary,
+                  const SizedBox(
+                    height: 30,
                   ),
-                ),
 
-                const SizedBox(
-                  width: 16,
-                ),
+                  Center(
 
-                Expanded(
+                    child: Column(
 
-                  child: Column(
+                      children: [
 
-                    crossAxisAlignment:
-                    CrossAxisAlignment.start,
+                        CircleAvatar(
 
-                    children: [
+                          radius: 45,
 
-                      Text(
+                          backgroundColor:
+                          const Color(
+                            0xFFD4AF37,
+                          ),
 
-                        title,
+                          child: const Icon(
 
-                        style:
-                        const TextStyle(
+                            Icons.person,
 
-                          fontWeight:
-                          FontWeight.bold,
+                            size: 45,
 
-                          fontSize: 16,
+                            color:
+                            Colors.white,
+                          ),
+                        ),
+
+                        const SizedBox(
+                          height: 15,
+                        ),
+
+                        Text(
+
+                          userName,
+
+                          style:
+                          const TextStyle(
+
+                            color:
+                            Color(
+                              0xFFD4AF37,
+                            ),
+
+                            fontWeight:
+                            FontWeight.bold,
+
+                            fontSize: 22,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(
+                    height: 40,
+                  ),
+
+                  _buildTile(
+
+                    icon:
+                    Icons.favorite_border,
+
+                    title: 'Favorites',
+
+                    subtitle:
+                    'Saved apartments',
+
+                    onTap: () {
+
+                      Get.snackbar(
+
+                        'Soon',
+
+                        'Favorites coming soon',
+                      );
+                    },
+                  ),
+
+                  _buildTile(
+
+                    icon:
+                    Icons.calendar_month,
+
+                    title:
+                    'Reservations',
+
+                    subtitle:
+                    'Your booking history',
+
+                    onTap: () {
+
+                      Get.to(
+                            () => const MyReservationsPage(),
+                      );
+                    },
+                  ),
+
+                  _buildTile(
+
+                    icon:
+                    Icons.notifications_none,
+
+                    title:
+                    'Notifications',
+
+                    subtitle:
+                    'Latest updates',
+
+                    onTap: () {
+
+                      Get.to(
+                            () =>
+                        const NotificationPage(),
+                      );
+                    },
+                  ),
+
+                  _buildTile(
+
+                    icon:
+                    Icons.settings_outlined,
+
+                    title: 'Settings',
+
+                    subtitle:
+                    'Application settings',
+
+                    onTap: () {
+
+                      Get.snackbar(
+
+                        'Soon',
+
+                        'Settings page coming soon',
+                      );
+                    },
+                  ),
+
+                  const SizedBox(
+                    height: 10,
+                  ),
+
+                  /// logout button
+                  GestureDetector(
+
+                    onTap: () async {
+
+                      await logout();
+                    },
+
+                    child: Container(
+
+                      padding:
+                      const EdgeInsets.all(
+                        18,
+                      ),
+
+                      decoration:
+                      BoxDecoration(
+
+                        color:
+                        Colors.red
+                            .withValues(
+                          alpha: .08,
+                        ),
+
+                        borderRadius:
+                        BorderRadius.circular(
+                          20,
                         ),
                       ),
 
-                      const SizedBox(
-                        height: 4,
+                      child: Row(
+
+                        children: [
+
+                          Container(
+
+                            padding:
+                            const EdgeInsets.all(
+                              12,
+                            ),
+
+                            decoration:
+                            BoxDecoration(
+
+                              color:
+                              Colors.red
+                                  .withValues(
+                                alpha: .12,
+                              ),
+
+                              borderRadius:
+                              BorderRadius.circular(
+                                14,
+                              ),
+                            ),
+
+                            child: const Icon(
+
+                              Icons.logout,
+
+                              color:
+                              Colors.red,
+                            ),
+                          ),
+
+                          const SizedBox(
+                            width: 18,
+                          ),
+
+                          const Expanded(
+
+                            child: Column(
+
+                              crossAxisAlignment:
+                              CrossAxisAlignment.start,
+
+                              children: [
+
+                                Text(
+
+                                  'Logout',
+
+                                  style: TextStyle(
+
+                                    fontSize: 18,
+
+                                    fontWeight:
+                                    FontWeight.bold,
+
+                                    color:
+                                    Colors.red,
+                                  ),
+                                ),
+
+                                SizedBox(
+                                  height: 4,
+                                ),
+
+                                Text(
+
+                                  'Disconnect your account',
+
+                                  style:
+                                  TextStyle(
+
+                                    color:
+                                    Colors.grey,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
-
-                      Text(
-
-                        subtitle,
-
-                        style:
-                        AppTextStyles.muted,
-                      ),
-                    ],
+                    ),
                   ),
-                ),
 
-                const Icon(
-                  Icons.arrow_forward_ios,
-                  size: 18,
-                ),
-              ],
+                  const SizedBox(
+                    height: 120,
+                  ),
+                ],
+              ),
             ),
           ),
+        );
+      },
+    );
+  }
+
+  Widget _buildTile({
+
+    required IconData icon,
+
+    required String title,
+
+    required String subtitle,
+
+    required VoidCallback onTap,
+  }) {
+
+    return GestureDetector(
+
+      onTap: onTap,
+
+      child: Container(
+
+        margin:
+        const EdgeInsets.only(
+          bottom: 18,
+        ),
+
+        padding:
+        const EdgeInsets.all(18),
+
+        decoration: BoxDecoration(
+
+          color: Colors.white,
+
+          borderRadius:
+          BorderRadius.circular(
+            20,
+          ),
+
+          boxShadow: [
+
+            BoxShadow(
+
+              color:
+              Colors.black.withValues(
+                alpha: 0.05,
+              ),
+
+              blurRadius: 10,
+
+              offset:
+              const Offset(0, 4),
+            ),
+          ],
+        ),
+
+        child: Row(
+
+          children: [
+
+            Container(
+
+              padding:
+              const EdgeInsets.all(
+                12,
+              ),
+
+              decoration:
+              BoxDecoration(
+
+                color:
+                const Color(
+                  0xFFD4AF37,
+                ).withValues(
+                  alpha: 0.12,
+                ),
+
+                borderRadius:
+                BorderRadius.circular(
+                  14,
+                ),
+              ),
+
+              child: Icon(
+
+                icon,
+
+                color:
+                const Color(
+                  0xFFD4AF37,
+                ),
+              ),
+            ),
+
+            const SizedBox(
+              width: 18,
+            ),
+
+            Expanded(
+
+              child: Column(
+
+                crossAxisAlignment:
+                CrossAxisAlignment.start,
+
+                children: [
+
+                  Text(
+
+                    title,
+
+                    style:
+                    const TextStyle(
+
+                      fontSize: 18,
+
+                      fontWeight:
+                      FontWeight.bold,
+                    ),
+                  ),
+
+                  const SizedBox(
+                    height: 4,
+                  ),
+
+                  Text(
+
+                    subtitle,
+
+                    style: TextStyle(
+
+                      color:
+                      Colors.grey
+                          .shade600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            const Icon(
+
+              Icons.arrow_forward_ios,
+
+              size: 18,
+            ),
+          ],
         ),
       ),
     );

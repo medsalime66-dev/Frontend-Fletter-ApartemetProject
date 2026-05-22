@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
+import '../../controllers/notification/notification_controller.dart';
 import '../../controllers/apartment/apartment_controller.dart';
-
+import '../notifications/notification_page.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_text_styles.dart';
@@ -200,16 +200,85 @@ class _HomeContent
                     ),
                   ),
 
-                  IconButton
-                      .filledTonal(
+                  Obx(() {
 
-                    onPressed: () {},
+                    final notificationController =
+                    Get.find<NotificationController>();
 
-                    icon: const Icon(
-                      Icons
-                          .notifications_none,
-                    ),
-                  ),
+                    final unreadCount =
+                        notificationController.notifications
+                            .where(
+                              (n) => !n.isRead,
+                        ).length;
+
+                    return Stack(
+
+                      clipBehavior: Clip.none,
+
+                      children: [
+
+                        IconButton(
+
+                          onPressed: () {
+
+                            Get.to(
+                                  () => const NotificationPage(),
+                            );
+                          },
+
+                          icon: const Icon(
+                            Icons.notifications_none,
+                          ),
+                        ),
+
+                        if (unreadCount > 0)
+
+                          Positioned(
+
+                            right: 6,
+                            top: 6,
+
+                            child: Container(
+
+                              padding:
+                              const EdgeInsets.all(5),
+
+                              decoration:
+                              const BoxDecoration(
+
+                                color: Colors.red,
+
+                                shape: BoxShape.circle,
+                              ),
+
+                              constraints:
+                              const BoxConstraints(
+
+                                minWidth: 18,
+                                minHeight: 18,
+                              ),
+
+                              child: Text(
+
+                                unreadCount.toString(),
+
+                                textAlign: TextAlign.center,
+
+                                style: const TextStyle(
+
+                                  color: Colors.white,
+
+                                  fontSize: 10,
+
+                                  fontWeight:
+                                  FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ),
+                      ],
+                    );
+                  }),
                 ],
               ),
 

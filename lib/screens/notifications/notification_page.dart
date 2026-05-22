@@ -224,7 +224,10 @@ class _NotificationPageState
 
                                   notification
                                       .createdAt
-                                      .toString(),
+                                      .toLocal()
+                                      .toString()
+                                      .replaceFirst('T', ' ')
+                                      .substring(0, 16),
 
                                   style:
                                   AppTextStyles.muted,

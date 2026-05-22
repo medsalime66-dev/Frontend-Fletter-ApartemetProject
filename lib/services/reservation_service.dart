@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 
 import '../core/network/api_client.dart';
+import '../models/reservation_model.dart';
 
 class ReservationService {
 
@@ -38,6 +39,69 @@ class ReservationService {
       );
 
     } catch (e) {
+
+      throw Exception(
+        'Unexpected reservation error',
+      );
+    }
+  }
+//
+  static Future<List<DateTime>>
+  getUnavailableDates(
+      int apartmentId,
+      ) async {
+
+    try {
+
+      final response =
+      await ApiClient.dio.get(
+
+        '/reservations/unavailable-dates/$apartmentId',
+      );
+
+      final List data =
+          response.data;
+
+      return data.map((e) {
+
+        return DateTime.parse(e);
+
+      }).toList();
+
+    } catch (e) {
+
+      return [];
+    }
+  }
+  /// my reservations
+  static Future<List<Reservation>>
+  getMyReservations() async {
+
+    try {
+
+      final response =
+      await ApiClient.dio.get(
+        '/reservations/my',
+      );
+
+      final List data =
+          response.data;
+
+      return data.map((e) {
+
+        return Reservation.fromJson(e);
+
+      }).toList();
+
+    } on DioException catch (e) {
+
+      throw Exception(
+
+        e.response?.data['message']
+            ?? 'Failed to load reservations',
+      );
+
+    } catch (_) {
 
       throw Exception(
         'Unexpected reservation error',

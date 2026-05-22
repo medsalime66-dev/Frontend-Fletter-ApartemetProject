@@ -1,123 +1,117 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
-import '../../core/theme/app_colors.dart';
+import '../../controllers/owner/owner_reservation_controller.dart';
+
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_text_styles.dart';
-import '../../data/mock_reservations.dart';
-import '../../models/reservation_model.dart';
+
+import '../../widgets/common/empty_state.dart';
+import '../../widgets/common/loading_skeleton.dart';
+
 import '../../widgets/owner/owner_reservation_tile.dart';
 
-class OwnerReservationsPage extends StatefulWidget {
-  const OwnerReservationsPage({super.key});
+class OwnerReservationsPage
+    extends StatelessWidget {
 
-  @override
-  State<OwnerReservationsPage> createState() => _OwnerReservationsPageState();
-}
-
-class _OwnerReservationsPageState extends State<OwnerReservationsPage> {
-  ReservationStatus? selectedStatus;
-
-  List<Reservation> get filtered {
-    if (selectedStatus == null) return mockReservations;
-
-    return mockReservations.where((reservation) {
-      return reservation.status == selectedStatus;
-    }).toList();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Réservations', style: AppTextStyles.h2),
-      ),
-      body: ListView(
-        padding: const EdgeInsets.all(AppSpacing.screen),
-        children: [
-          const Text(
-            'Suivi des demandes',
-            style: AppTextStyles.h1,
-          ),
-          const SizedBox(height: 18),
-
-          SizedBox(
-            height: 42,
-            child: ListView(
-              scrollDirection: Axis.horizontal,
-              children: [
-                _FilterChip(
-                  label: 'Toutes',
-                  active: selectedStatus == null,
-                  onTap: () {
-                    setState(() {
-                      selectedStatus = null;
-                    });
-                  },
-                ),
-                _FilterChip(
-                  label: 'En attente',
-                  active: selectedStatus == ReservationStatus.pending,
-                  onTap: () {
-                    setState(() {
-                      selectedStatus = ReservationStatus.pending;
-                    });
-                  },
-                ),
-                _FilterChip(
-                  label: 'Confirmées',
-                  active: selectedStatus == ReservationStatus.confirmed,
-                  onTap: () {
-                    setState(() {
-                      selectedStatus = ReservationStatus.confirmed;
-                    });
-                  },
-                ),
-              ],
-            ),
-          ),
-
-          const SizedBox(height: 22),
-
-          ...filtered.map(
-                (reservation) {
-              return OwnerReservationTile(
-                apartment: reservation.apartmentTitle,
-                client: reservation.clientName,
-                status: reservation.status.name,
-              );
-            },
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _FilterChip extends StatelessWidget {
-  final String label;
-  final bool active;
-  final VoidCallback onTap;
-
-  const _FilterChip({
-    required this.label,
-    required this.active,
-    required this.onTap,
+  const OwnerReservationsPage({
+    super.key,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(right: 10),
-      child: ChoiceChip(
-        label: Text(label),
-        selected: active,
-        selectedColor: AppColors.text,
-        labelStyle: TextStyle(
-          color: active ? Colors.white : AppColors.text,
-          fontWeight: FontWeight.w700,
+
+    final controller =
+    Get.find<
+        OwnerReservationController>();
+
+    return Scaffold(
+
+      appBar: AppBar(
+
+        title: const Text(
+          'Reservations',
         ),
-        onSelected: (_) => onTap(),
       ),
+
+      body: Obx(() {
+
+        if (
+        controller
+            .isLoading
+            .value
+        ) {
+
+          return const LoadingSkeleton();
+        }
+
+        if (
+        controller
+            .reservations
+            .isEmpty
+        ) {
+
+          return const EmptyState(
+
+            text:
+            'No reservations found',
+          );
+        }
+
+        return RefreshIndicator(
+
+          onRefresh:
+          controller.loadReservations,
+
+          child: ListView(
+
+            padding:
+            const EdgeInsets.all(
+              AppSpacing.screen,
+            ),
+
+            children: [
+
+              const Text(
+
+                'Incoming Reservations',
+
+                style:
+                AppTextStyles.h1,
+              ),
+
+              const SizedBox(
+                height: 24,
+              ),
+
+              ...controller
+                  .reservations
+                  .map((reservation) {
+
+                return OwnerReservationTile(
+
+                  apartment:
+                  reservation
+                      .apartmentTitle,
+
+                  client:
+                  reservation
+                      .clientName,
+
+                  status:
+                  reservation.status,
+
+                  startDate:
+                  reservation.startDate,
+
+                  endDate:
+                  reservation.endDate,
+                );
+              }),
+            ],
+          ),
+        );
+      }),
     );
   }
 }

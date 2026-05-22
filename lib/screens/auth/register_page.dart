@@ -62,7 +62,10 @@ class _RegisterPageState
     }
 
     final success =
-    await authController.login(
+    await authController.register(
+
+      name:
+      nameController.text.trim(),
 
       phone:
       phoneController.text.trim(),
@@ -100,11 +103,17 @@ class _RegisterPageState
 
     return Scaffold(
 
+      resizeToAvoidBottomInset: true,
+
       appBar: AppBar(),
 
       body: SafeArea(
 
-        child: Padding(
+        child: SingleChildScrollView(
+
+          keyboardDismissBehavior:
+          ScrollViewKeyboardDismissBehavior
+              .onDrag,
 
           padding:
           const EdgeInsets.all(
@@ -121,6 +130,8 @@ class _RegisterPageState
               CrossAxisAlignment.start,
 
               children: [
+
+                const SizedBox(height: 10),
 
                 const Text(
 
@@ -186,7 +197,7 @@ class _RegisterPageState
                   passwordController,
                 ),
 
-                const SizedBox(height: 24),
+                const SizedBox(height: 30),
 
                 Obx(() {
 
@@ -211,6 +222,14 @@ class _RegisterPageState
                         : register,
                   );
                 }),
+
+                SizedBox(
+
+                  height:
+                  MediaQuery.of(context)
+                      .viewInsets
+                      .bottom,
+                ),
               ],
             ),
           ),

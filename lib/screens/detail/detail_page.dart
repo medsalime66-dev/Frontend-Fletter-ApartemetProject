@@ -16,9 +16,15 @@ class DetailPage extends StatelessWidget {
 
   final ApartmentModel apartment;
 
+  final bool isOwner;
+
   const DetailPage({
+
     super.key,
+
     required this.apartment,
+
+    this.isOwner = false,
   });
 
   @override
@@ -219,115 +225,117 @@ class DetailPage extends StatelessWidget {
                   ),
 
                   /// OWNER CARD
-                  _buildSectionCard(
+                  if (!isOwner)
+                    _buildSectionCard(
 
-                    child: Column(
+                      child: Column(
 
-                      children: [
+                        children: [
 
-                        Row(
+                          Row(
 
-                          children: [
+                            children: [
 
-                            Container(
+                              Container(
 
-                              width: 58,
-                              height: 58,
+                                width: 58,
+                                height: 58,
 
-                              decoration:
-                              BoxDecoration(
+                                decoration:
+                                BoxDecoration(
+
+                                  color:
+                                  AppColors.primary,
+
+                                  borderRadius:
+                                  BorderRadius.circular(18),
+                                ),
+
+                                child:
+                                const Icon(
+
+                                  Icons.person,
+
+                                  color:
+                                  Colors.white,
+
+                                  size: 28,
+                                ),
+                              ),
+
+                              const SizedBox(
+                                width: 14,
+                              ),
+
+                              Expanded(
+
+                                child: Column(
+
+                                  crossAxisAlignment:
+                                  CrossAxisAlignment.start,
+
+                                  children: [
+
+                                    const Text(
+
+                                      'Owner',
+
+                                      style:
+                                      AppTextStyles.muted,
+                                    ),
+
+                                    const SizedBox(
+                                      height: 4,
+                                    ),
+
+                                    Text(
+
+                                      apartment.ownerName,
+
+                                      style:
+                                      AppTextStyles.h3,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+
+                          const SizedBox(
+                            height: 18,
+                          ),
+
+                          Row(
+
+                            children: [
+
+                              const Icon(
+
+                                Icons.phone,
 
                                 color:
                                 AppColors.primary,
-
-                                borderRadius:
-                                BorderRadius.circular(18),
                               ),
 
-                              child:
-                              const Icon(
-
-                                Icons.person,
-
-                                color:
-                                Colors.white,
-
-                                size: 28,
+                              const SizedBox(
+                                width: 12,
                               ),
-                            ),
 
-                            const SizedBox(
-                              width: 14,
-                            ),
-
-                            Expanded(
-
-                              child: Column(
-
-                                crossAxisAlignment:
-                                CrossAxisAlignment.start,
-
-                                children: [
-
-                                  const Text(
-
-                                    'Owner',
-
-                                    style:
-                                    AppTextStyles.muted,
-                                  ),
-
-                                  const SizedBox(
-                                    height: 4,
-                                  ),
-
-                                  Text(
-
-                                    apartment.ownerName,
-
-                                    style:
-                                    AppTextStyles.h3,
-                                  ),
-                                ],
+                              Text(
+                                apartment.ownerPhone,
                               ),
-                            ),
-                          ],
-                        ),
-
-                        const SizedBox(
-                          height: 18,
-                        ),
-
-                        Row(
-
-                          children: [
-
-                            const Icon(
-
-                              Icons.phone,
-
-                              color:
-                              AppColors.primary,
-                            ),
-
-                            const SizedBox(
-                              width: 12,
-                            ),
-
-                            Text(
-                              apartment.ownerPhone,
-                            ),
-                          ],
-                        ),
-                      ],
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
 
-                  const SizedBox(
-                    height: 28,
-                  ),
+                  if (!isOwner)
+                    const SizedBox(
+                      height: 28,
+                    ),
 
-                  /// PRICE + RESERVE
+                  /// PRICE + ACTION
                   Container(
 
                     padding:
@@ -405,6 +413,21 @@ class DetailPage extends StatelessWidget {
 
                             onPressed: () {
 
+                              if (isOwner) {
+
+                                Get.snackbar(
+
+                                  'Edit',
+
+                                  'Edit page coming soon',
+
+                                  snackPosition:
+                                  SnackPosition.BOTTOM,
+                                );
+
+                                return;
+                              }
+
                               Get.to(
                                     () => ReservationPage(
                                   apartment:
@@ -431,11 +454,13 @@ class DetailPage extends StatelessWidget {
                               ),
                             ),
 
-                            child: const Text(
+                            child: Text(
 
-                              'Reserve',
+                              isOwner
+                                  ? 'Edit Apartment'
+                                  : 'Reserve',
 
-                              style: TextStyle(
+                              style: const TextStyle(
 
                                 fontSize: 18,
 
@@ -461,7 +486,6 @@ class DetailPage extends StatelessWidget {
     );
   }
 
-  /// reusable card
   Widget _buildSectionCard({
     required Widget child,
   }) {

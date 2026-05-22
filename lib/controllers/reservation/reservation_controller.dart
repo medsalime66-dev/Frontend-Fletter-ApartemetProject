@@ -14,6 +14,10 @@ class ReservationController
     required this.apartment,
   });
 
+  /// unavailable dates
+  final unavailableDates =
+      <DateTime>[].obs;
+
   /// dates
   final Rxn<DateTime> startDate =
   Rxn<DateTime>();
@@ -28,6 +32,42 @@ class ReservationController
   /// reservation success
   final RxBool reservationSuccess =
       false.obs;
+
+  @override
+  void onInit() {
+
+    super.onInit();
+
+    loadUnavailableDates();
+  }
+
+  /// load unavailable dates
+  Future<void> loadUnavailableDates()
+  async {
+
+    unavailableDates.value =
+    await ReservationService
+        .getUnavailableDates(
+      apartment.id,
+    );
+  }
+
+  /// check unavailable
+  bool isDateUnavailable(
+      DateTime date,
+      ) {
+
+    return unavailableDates.any(
+
+          (d) =>
+
+      d.year == date.year &&
+
+          d.month == date.month &&
+
+          d.day == date.day,
+    );
+  }
 
   /// pick dates
   Future<void> pickDateRange(
@@ -52,7 +92,9 @@ class ReservationController
 
             colorScheme:
             const ColorScheme.light(
-              primary: Color(0xFFC8A96B),
+
+              primary:
+              Color(0xFFC8A96B),
             ),
           ),
 
@@ -61,21 +103,72 @@ class ReservationController
       },
     );
 
-    if (picked != null) {
-
-      startDate.value =
-          picked.start;
-
-      endDate.value =
-          picked.end;
+    if (picked == null) {
+      return;
     }
+
+    /// validate unavailable dates
+    DateTime current =
+        picked.start;
+
+    bool invalid = false;
+
+    while (
+    !current.isAfter(
+      picked.end,
+    )
+    ) {
+
+      if (
+      isDateUnavailable(
+        current,
+      )
+      ) {
+
+        invalid = true;
+
+        break;
+      }
+
+      current =
+          current.add(
+            const Duration(
+              days: 1,
+            ),
+          );
+    }
+
+    if (invalid) {
+
+      Get.snackbar(
+
+        'Unavailable Dates',
+
+        'Some selected dates are already reserved',
+
+        snackPosition:
+        SnackPosition.BOTTOM,
+      );
+
+      return;
+    }
+
+    startDate.value =
+        picked.start;
+
+    endDate.value =
+        picked.end;
   }
 
   /// nights
   int get nights {
 
-    if (startDate.value == null ||
-        endDate.value == null) {
+    if (
+    startDate.value == null ||
+
+        endDate.value == null
+    ) {
+
       return 0;
     }
 
@@ -96,8 +189,11 @@ class ReservationController
   /// validate
   bool validateDates() {
 
-    if (startDate.value == null ||
-        endDate.value == null) {
+    if (
+    startDate.value == null ||
+
+        endDate.value == null
+    ) {
 
       Get.snackbar(
 
@@ -116,9 +212,29 @@ class ReservationController
   }
 
   /// create reservation
-  Future<bool> createReservation() async {
+  Future<bool> createReservation()
+  async {
 
     try {
+
+      if (
+      startDate.value == null ||
+
+          endDate.value == null
+      ) {
+
+        Get.snackbar(
+
+          'Error',
+
+          'Please select dates',
+
+          snackPosition:
+          SnackPosition.BOTTOM,
+        );
+
+        return false;
+      }
 
       isLoading.value = true;
 
@@ -143,6 +259,19 @@ class ReservationController
       reservationSuccess.value =
           success;
 
+      if (!success) {
+
+        Get.snackbar(
+
+          'Reservation Failed',
+
+          'Selected dates unavailable',
+
+          snackPosition:
+          SnackPosition.BOTTOM,
+        );
+      }
+
       return success;
 
     } catch (e) {
@@ -151,7 +280,7 @@ class ReservationController
 
         'Reservation Error',
 
-        e.toString(),
+        'Something went wrong',
 
         snackPosition:
         SnackPosition.BOTTOM,

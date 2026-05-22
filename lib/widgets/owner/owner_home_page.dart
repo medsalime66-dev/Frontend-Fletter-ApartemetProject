@@ -181,8 +181,8 @@ class _OwnerHomePageState
 
                       Get.to(
                             () => DetailPage(
-                          apartment:
-                          apartment,
+                          apartment: apartment,
+                          isOwner: true,
                         ),
                       );
                     },
