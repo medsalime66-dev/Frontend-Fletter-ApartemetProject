@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
@@ -9,9 +10,9 @@ import '../../models/apartment_model.dart';
 import '../../widgets/apartment/apartment_gallery.dart';
 import '../../widgets/apartment/amenity_chip.dart';
 
-import '../reservation/reservation_page.dart';
+import '../../screens/reservation/reservation_page.dart';
 
-class DetailPage extends StatelessWidget{
+class DetailPage extends StatelessWidget {
 
   final ApartmentModel apartment;
 
@@ -21,177 +22,191 @@ class DetailPage extends StatelessWidget{
   });
 
   @override
-  Widget build(BuildContext context){
+  Widget build(BuildContext context) {
 
     return Scaffold(
 
       backgroundColor:
       AppColors.background,
 
-      body:CustomScrollView(
+      body: CustomScrollView(
 
-        slivers:[
+        slivers: [
 
-//app bar
+          /// APP BAR
           SliverAppBar(
 
-            expandedHeight:320,
+            expandedHeight: 340,
 
-            pinned:true,
+            pinned: true,
+
+            elevation: 0,
 
             backgroundColor:
             AppColors.surface,
 
-            iconTheme:const IconThemeData(
-              color:Colors.white,
+            iconTheme:
+            const IconThemeData(
+              color: Colors.white,
             ),
 
-            flexibleSpace:FlexibleSpaceBar(
+            flexibleSpace:
+            FlexibleSpaceBar(
 
               background:
               ApartmentGallery(
-                images:apartment.imageUrls,
+                images:
+                apartment.imageUrls,
               ),
             ),
           ),
 
-//content
+          /// CONTENT
           SliverToBoxAdapter(
 
-            child:Padding(
+            child: Padding(
 
-              padding:const EdgeInsets.all(
+              padding:
+              const EdgeInsets.all(
                 AppSpacing.screen,
               ),
 
-              child:Column(
+              child: Column(
 
                 crossAxisAlignment:
                 CrossAxisAlignment.start,
 
-                children:[
+                children: [
 
-//title
+                  /// TITLE
                   Text(
+
                     apartment.title,
-                    style:AppTextStyles.h1,
+
+                    style:
+                    AppTextStyles.h1,
                   ),
 
-                  const SizedBox(height:10),
+                  const SizedBox(
+                    height: 12,
+                  ),
 
-//location
+                  /// LOCATION
                   Row(
 
-                    children:[
+                    children: [
 
                       const Icon(
+
                         Icons.location_on,
-                        size:18,
-                        color:AppColors.primary,
+
+                        size: 18,
+
+                        color:
+                        AppColors.primary,
                       ),
 
-                      const SizedBox(width:6),
+                      const SizedBox(
+                        width: 6,
+                      ),
 
                       Expanded(
 
-                        child:Text(
+                        child: Text(
 
                           "${apartment.city}, ${apartment.district}",
 
-                          style:AppTextStyles.muted,
+                          style:
+                          AppTextStyles.muted,
                         ),
                       ),
                     ],
                   ),
 
-                  const SizedBox(height:26),
+                  const SizedBox(
+                    height: 28,
+                  ),
 
-//description card
-                  Container(
+                  /// DESCRIPTION
+                  _buildSectionCard(
 
-                    padding:const EdgeInsets.all(20),
-
-                    decoration:BoxDecoration(
-
-                      color:AppColors.surface,
-
-                      borderRadius:
-                      BorderRadius.circular(24),
-
-                      border:Border.all(
-                        color:AppColors.border,
-                      ),
-                    ),
-
-                    child:Column(
+                    child: Column(
 
                       crossAxisAlignment:
                       CrossAxisAlignment.start,
 
-                      children:[
+                      children: [
 
                         const Text(
+
                           'Description',
-                          style:AppTextStyles.h3,
+
+                          style:
+                          AppTextStyles.h3,
                         ),
 
-                        const SizedBox(height:14),
+                        const SizedBox(
+                          height: 14,
+                        ),
 
                         Text(
+
                           apartment.description,
-                          style:AppTextStyles.body,
+
+                          style:
+                          AppTextStyles.body,
                         ),
                       ],
                     ),
                   ),
 
-                  const SizedBox(height:24),
+                  const SizedBox(
+                    height: 24,
+                  ),
 
-//features
-                  Container(
+                  /// FEATURES
+                  _buildSectionCard(
 
-                    padding:const EdgeInsets.all(20),
+                    child: Wrap(
 
-                    decoration:BoxDecoration(
+                      spacing: 12,
 
-                      color:AppColors.surface,
+                      runSpacing: 12,
 
-                      borderRadius:
-                      BorderRadius.circular(24),
-
-                      border:Border.all(
-                        color:AppColors.border,
-                      ),
-                    ),
-
-                    child:Wrap(
-
-                      spacing:12,
-
-                      runSpacing:12,
-
-                      children:[
+                      children: [
 
                         AmenityChip(
-                          icon:Icons.bed,
+
+                          icon:
+                          Icons.bed,
+
                           label:
                           "${apartment.rooms} Rooms",
                         ),
 
                         AmenityChip(
-                          icon:Icons.bathtub,
+
+                          icon:
+                          Icons.bathtub,
+
                           label:
                           "${apartment.bathrooms} Bathrooms",
                         ),
 
                         AmenityChip(
-                          icon:Icons.square_foot,
+
+                          icon:
+                          Icons.square_foot,
+
                           label:
                           "${apartment.area} m²",
                         ),
 
                         AmenityChip(
-                          icon:Icons.wallet,
+
+                          icon:
+                          Icons.wallet,
+
                           label:
                           apartment.walletCode,
                         ),
@@ -199,64 +214,77 @@ class DetailPage extends StatelessWidget{
                     ),
                   ),
 
-                  const SizedBox(height:24),
+                  const SizedBox(
+                    height: 24,
+                  ),
 
-//owner card
-                  Container(
+                  /// OWNER CARD
+                  _buildSectionCard(
 
-                    padding:const EdgeInsets.all(20),
+                    child: Column(
 
-                    decoration:BoxDecoration(
+                      children: [
 
-                      color:AppColors.surface,
-
-                      borderRadius:
-                      BorderRadius.circular(24),
-
-                      border:Border.all(
-                        color:AppColors.border,
-                      ),
-                    ),
-
-                    child:Column(
-
-                      children:[
-
-//owner
                         Row(
 
-                          children:[
+                          children: [
 
-                            const CircleAvatar(
+                            Container(
 
-                              backgroundColor:
-                              AppColors.primary,
+                              width: 58,
+                              height: 58,
 
-                              child:Icon(
+                              decoration:
+                              BoxDecoration(
+
+                                color:
+                                AppColors.primary,
+
+                                borderRadius:
+                                BorderRadius.circular(18),
+                              ),
+
+                              child:
+                              const Icon(
+
                                 Icons.person,
-                                color:Colors.white,
+
+                                color:
+                                Colors.white,
+
+                                size: 28,
                               ),
                             ),
 
-                            const SizedBox(width:14),
+                            const SizedBox(
+                              width: 14,
+                            ),
 
                             Expanded(
 
-                              child:Column(
+                              child: Column(
 
                                 crossAxisAlignment:
                                 CrossAxisAlignment.start,
 
-                                children:[
+                                children: [
 
                                   const Text(
+
                                     'Owner',
+
                                     style:
                                     AppTextStyles.muted,
                                   ),
 
+                                  const SizedBox(
+                                    height: 4,
+                                  ),
+
                                   Text(
+
                                     apartment.ownerName,
+
                                     style:
                                     AppTextStyles.h3,
                                   ),
@@ -266,20 +294,25 @@ class DetailPage extends StatelessWidget{
                           ],
                         ),
 
-                        const SizedBox(height:18),
+                        const SizedBox(
+                          height: 18,
+                        ),
 
-//phone
                         Row(
 
-                          children:[
+                          children: [
 
                             const Icon(
+
                               Icons.phone,
+
                               color:
                               AppColors.primary,
                             ),
 
-                            const SizedBox(width:12),
+                            const SizedBox(
+                              width: 12,
+                            ),
 
                             Text(
                               apartment.ownerPhone,
@@ -290,105 +323,124 @@ class DetailPage extends StatelessWidget{
                     ),
                   ),
 
-                  const SizedBox(height:28),
+                  const SizedBox(
+                    height: 28,
+                  ),
 
-//price + reservation
+                  /// PRICE + RESERVE
                   Container(
 
-                    padding:const EdgeInsets.all(20),
+                    padding:
+                    const EdgeInsets.all(
+                      20,
+                    ),
 
-                    decoration:BoxDecoration(
+                    decoration:
+                    BoxDecoration(
 
-                      color:AppColors.surface,
+                      color:
+                      AppColors.surface,
 
                       borderRadius:
-                      BorderRadius.circular(24),
+                      BorderRadius.circular(
+                        24,
+                      ),
 
-                      border:Border.all(
-                        color:AppColors.border,
+                      border:
+                      Border.all(
+                        color:
+                        AppColors.border,
                       ),
                     ),
 
-                    child:Row(
+                    child: Column(
 
-                      children:[
+                      children: [
 
-//price
-                        Expanded(
+                        Row(
 
-                          child:Column(
+                          children: [
 
-                            crossAxisAlignment:
-                            CrossAxisAlignment.start,
+                            const Text(
 
-                            children:[
+                              'Price Per Night',
 
-                              const Text(
-                                'Price Per Night',
-                                style:
-                                AppTextStyles.muted,
+                              style:
+                              AppTextStyles.muted,
+                            ),
+
+                            const Spacer(),
+
+                            Text(
+
+                              "${apartment.pricePerNight} MRU",
+
+                              style:
+                              const TextStyle(
+
+                                fontSize: 28,
+
+                                fontWeight:
+                                FontWeight.w900,
+
+                                color:
+                                AppColors.primaryDark,
                               ),
-
-                              const SizedBox(height:4),
-
-                              Text(
-
-                                "${apartment.pricePerNight} MRU",
-
-                                style:const TextStyle(
-
-                                  fontSize:26,
-
-                                  fontWeight:
-                                  FontWeight.w900,
-
-                                  color:
-                                  AppColors.primaryDark,
-                                ),
-                              ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
 
-//button
-                        Expanded(
+                        const SizedBox(
+                          height: 24,
+                        ),
 
-                          child:SizedBox(
+                        SizedBox(
 
-                            height:56,
+                          width:
+                          double.infinity,
 
-                            child:ElevatedButton(
+                          height: 58,
 
-                              onPressed:(){
+                          child: ElevatedButton(
 
-                                Navigator.push(
+                            onPressed: () {
 
-                                  context,
+                              Get.to(
+                                    () => ReservationPage(
+                                  apartment:
+                                  apartment,
+                                ),
+                              );
+                            },
 
-                                  MaterialPageRoute(
+                            style:
+                            ElevatedButton.styleFrom(
 
-                                    builder:(_)=>ReservationPage(
-                                      apartment:apartment,
-                                    ),
-                                  ),
-                                );
-                              },
+                              backgroundColor:
+                              AppColors.primary,
 
-                              style:ElevatedButton.styleFrom(
+                              elevation: 0,
 
-                                backgroundColor:
-                                AppColors.primary,
+                              shape:
+                              RoundedRectangleBorder(
 
-                                shape:
-                                RoundedRectangleBorder(
-
-                                  borderRadius:
-                                  BorderRadius.circular(18),
+                                borderRadius:
+                                BorderRadius.circular(
+                                  18,
                                 ),
                               ),
+                            ),
 
-                              child:const Text(
-                                'Reserve',
+                            child: const Text(
+
+                              'Reserve',
+
+                              style: TextStyle(
+
+                                fontSize: 18,
+
+                                fontWeight:
+                                FontWeight.bold,
                               ),
                             ),
                           ),
@@ -397,13 +449,47 @@ class DetailPage extends StatelessWidget{
                     ),
                   ),
 
-                  const SizedBox(height:40),
+                  const SizedBox(
+                    height: 40,
+                  ),
                 ],
               ),
             ),
           ),
         ],
       ),
+    );
+  }
+
+  /// reusable card
+  Widget _buildSectionCard({
+    required Widget child,
+  }) {
+
+    return Container(
+
+      width: double.infinity,
+
+      padding:
+      const EdgeInsets.all(20),
+
+      decoration:
+      BoxDecoration(
+
+        color:
+        AppColors.surface,
+
+        borderRadius:
+        BorderRadius.circular(24),
+
+        border:
+        Border.all(
+          color:
+          AppColors.border,
+        ),
+      ),
+
+      child: child,
     );
   }
 }

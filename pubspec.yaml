@@ -37,6 +37,8 @@ dependencies:
   shared_preferences: ^2.2.2
   image_picker: ^1.1.2
 
+
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -55,6 +57,8 @@ flutter_native_splash:
     image: assets/images/logo.png
 
   fullscreen: true
+
+
 # The following section is specific to Flutter packages.
 flutter:
 
@@ -93,3 +97,5 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+  assets:
+    - assets/images/

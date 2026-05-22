@@ -1,16 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+
+import '../../controllers/auth/auth_controller.dart';
 
 import '../../core/constants/app_constants.dart';
 
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_text_styles.dart';
 
-import '../../services/auth_service.dart';
-
 import '../../widgets/common/app_text_field.dart';
 import '../../widgets/common/primary_button.dart';
 
 import '../home/home_page.dart';
+
 import '../../widgets/owner/owner_home_page.dart';
 
 import 'register_page.dart';
@@ -38,7 +40,8 @@ class _LoginPageState
   final passwordController =
   TextEditingController();
 
-  bool isLoading = false;
+  final authController =
+  Get.find<AuthController>();
 
   @override
   void dispose() {
@@ -53,105 +56,56 @@ class _LoginPageState
   /// login
   Future<void> login() async {
 
-    if (!formKey.currentState!.validate()) {
+    if (!formKey.currentState!
+        .validate()) {
+
       return;
     }
 
-    setState(() {
-      isLoading = true;
-    });
+    final success =
+    await authController.login(
 
-    try {
+      phone:
+      phoneController.text.trim(),
 
-      final success =
-      await AuthService.login(
+      password:
+      passwordController.text.trim(),
+    );
 
-        phone:
-        phoneController.text.trim(),
-
-        password:
-        passwordController.text.trim(),
-      );
-
-      if (!mounted) {
-        return;
-      }
-
-      if (!success) {
-
-        ScaffoldMessenger.of(context)
-            .showSnackBar(
-
-          const SnackBar(
-
-            content: Text(
-              'Login failed',
-            ),
-          ),
-        );
-
-        return;
-      }
-
-      final role =
-      await AuthService.getRole();
-
-      if (!mounted) {
-        return;
-      }
-
-      /// owner
-      if (role ==
-          AppConstants.ownerRole) {
-
-        Navigator.pushReplacement(
-
-          context,
-
-          MaterialPageRoute(
-
-            builder: (_) =>
-            const OwnerHomePage(),
-          ),
-        );
-
-        return;
-      }
-
-      /// user
-      Navigator.pushReplacement(
-
-        context,
-
-        MaterialPageRoute(
-
-          builder: (_) =>
-          const HomePage(),
-        ),
-      );
-
-    } catch (e) {
-
-      ScaffoldMessenger.of(context)
-          .showSnackBar(
-
-        SnackBar(
-
-          content: Text(
-            e.toString(),
-          ),
-        ),
-      );
-
-    } finally {
-
-      if (mounted) {
-
-        setState(() {
-          isLoading = false;
-        });
-      }
+    if (!mounted) {
+      return;
     }
+
+    if (!success) {
+
+      Get.snackbar(
+
+        'Error',
+
+        'Login failed',
+
+        snackPosition:
+        SnackPosition.BOTTOM,
+      );
+
+      return;
+    }
+
+    /// owner
+    if (authController.role.value ==
+        AppConstants.ownerRole) {
+
+      Get.offAll(
+            () => const OwnerHomePage(),
+      );
+
+      return;
+    }
+
+    /// user
+    Get.offAll(
+          () => const HomePage(),
+    );
   }
 
   @override
@@ -210,7 +164,8 @@ class _LoginPageState
                     controller:
                     phoneController,
 
-                    label: 'Téléphone',
+                    label:
+                    'Téléphone',
 
                     icon:
                     Icons.phone_outlined,
@@ -245,7 +200,8 @@ class _LoginPageState
                     controller:
                     passwordController,
 
-                    label: 'Mot de passe',
+                    label:
+                    'Mot de passe',
 
                     icon:
                     Icons.lock_outline,
@@ -275,17 +231,29 @@ class _LoginPageState
                     height: 28,
                   ),
 
-                  PrimaryButton(
+                  Obx(() {
 
-                    text: isLoading
-                        ? 'Chargement...'
-                        : 'Se connecter',
+                    return PrimaryButton(
 
-                    onPressed:
-                    isLoading
-                        ? null
-                        : login,
-                  ),
+                      text:
+                      authController
+                          .isLoading
+                          .value
+
+                          ? 'Chargement...'
+
+                          : 'Se connecter',
+
+                      onPressed:
+                      authController
+                          .isLoading
+                          .value
+
+                          ? null
+
+                          : login,
+                    );
+                  }),
 
                   const SizedBox(
                     height: 20,
@@ -306,15 +274,9 @@ class _LoginPageState
 
                         onPressed: () {
 
-                          Navigator.push(
-
-                            context,
-
-                            MaterialPageRoute(
-
-                              builder: (_) =>
-                              const RegisterPage(),
-                            ),
+                          Get.to(
+                                () =>
+                            const RegisterPage(),
                           );
                         },
 

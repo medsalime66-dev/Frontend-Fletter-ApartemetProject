@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
-import '../../services/auth_service.dart';
+import '../../controllers/auth/auth_controller.dart';
 
 import '../auth/login_page.dart';
 
@@ -8,151 +9,125 @@ import '../home/home_page.dart';
 
 import '../../widgets/owner/owner_home_page.dart';
 
-class SplashPage extends StatefulWidget{
+class SplashPage extends StatefulWidget {
 
-  const SplashPage({super.key});
+  const SplashPage({
+    super.key,
+  });
 
   @override
-  State<SplashPage> createState()=>_SplashPageState();
+  State<SplashPage> createState() =>
+      _SplashPageState();
 }
 
-class _SplashPageState extends State<SplashPage>{
+class _SplashPageState
+    extends State<SplashPage> {
+
+  final authController =
+  Get.find<AuthController>();
 
   @override
-  void initState(){
+  void initState() {
 
     super.initState();
 
     checkLogin();
   }
 
-  ///check authentication
-  Future<void> checkLogin() async{
+  /// check authentication
+  Future<void> checkLogin() async {
 
     await Future.delayed(
-      const Duration(seconds:2),
+      const Duration(seconds: 2),
     );
 
-    final isLoggedIn=
-    await AuthService.isLoggedIn();
+    await authController.initAuth();
 
-    if(!mounted){
+    if (!mounted) {
       return;
     }
 
-    if(!isLoggedIn){
+    /// not logged in
+    if (!authController.isLoggedIn.value) {
 
-      goToLogin();
-
-      return;
-    }
-
-    final role=
-    await AuthService.getRole();
-
-    if(role==null){
-
-      goToLogin();
-
-      return;
-    }
-
-    ///owner
-    if(role=='OWNER'){
-
-      Navigator.pushReplacement(
-
-        context,
-
-        MaterialPageRoute(
-
-          builder:(_)=>const OwnerHomePage(),
-        ),
+      Get.off(
+            () => const LoginPage(),
       );
 
       return;
     }
 
+    /// owner
+    if (authController.role.value ==
+        'OWNER') {
 
-    ///client
-    Navigator.pushReplacement(
+      Get.off(
+            () => const OwnerHomePage(),
+      );
 
-      context,
+      return;
+    }
 
-      MaterialPageRoute(
-
-        builder:(_)=>const HomePage(),
-      ),
-    );
-  }
-
-  ///go login
-  void goToLogin(){
-
-    Navigator.pushReplacement(
-
-      context,
-
-      MaterialPageRoute(
-
-        builder:(_)=>const LoginPage(),
-      ),
+    /// user
+    Get.off(
+          () => const HomePage(),
     );
   }
 
   @override
-  Widget build(BuildContext context){
+  Widget build(BuildContext context) {
 
     return Scaffold(
 
-      body:Center(
+      body: Center(
 
-        child:Column(
+        child: Column(
 
           mainAxisAlignment:
           MainAxisAlignment.center,
 
-          children:[
+          children: [
 
             Container(
 
-              height:110,
+              height: 110,
 
-              width:110,
+              width: 110,
 
-              decoration:BoxDecoration(
+              decoration: BoxDecoration(
 
-                color:Colors.black,
+                color: Colors.black,
 
                 borderRadius:
                 BorderRadius.circular(30),
               ),
 
-              child:const Icon(
+              child: const Icon(
 
                 Icons.apartment,
 
-                size:55,
+                size: 55,
 
-                color:Colors.amber,
+                color: Colors.amber,
               ),
             ),
 
-            const SizedBox(height:24),
+            const SizedBox(height: 24),
 
             const Text(
 
               'SAKAN',
 
-              style:TextStyle(
+              style: TextStyle(
 
-                fontSize:32,
+                fontSize: 32,
 
-                fontWeight:FontWeight.w900,
+                fontWeight:
+                FontWeight.w900,
               ),
             ),
 
-            const SizedBox(height:16),
+            const SizedBox(height: 18),
 
             const CircularProgressIndicator(),
           ],

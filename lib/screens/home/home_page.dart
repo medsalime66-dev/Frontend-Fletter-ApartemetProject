@@ -1,353 +1,360 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+
+import '../../controllers/apartment/apartment_controller.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_text_styles.dart';
 
-import '../../models/apartment_model.dart';
-
-import '../../repositories/apartment_repository.dart';
-
 import '../../widgets/apartment/apartment_card.dart';
+
 import '../../widgets/common/section_title.dart';
 
 import '../detail/detail_page.dart';
+
 import '../profile/profile_page.dart';
+
 import '../search/search_page.dart';
 
-class HomePage extends StatefulWidget{
+class HomePage extends StatefulWidget {
 
-  const HomePage({super.key});
+  const HomePage({
+    super.key,
+  });
 
   @override
-  State<HomePage> createState(){
+  State<HomePage> createState() {
     return _HomePageState();
   }
 }
 
 class _HomePageState
-    extends State<HomePage>{
+    extends State<HomePage> {
 
-//repository
-  final ApartmentRepository _repository=
-  ApartmentRepository();
+  final apartmentController =
+  Get.find<ApartmentController>();
 
-//apartments
-  List<ApartmentModel> apartments=[];
-
-//loading
-  bool isLoading=true;
-
-//selected nav index
-  int selectedIndex=0;
+  int selectedIndex = 0;
 
   @override
-  void initState(){
+  void initState() {
 
     super.initState();
 
-    loadApartments();
-  }
-
-//load apartments
-  Future<void> loadApartments()async{
-
-    try{
-
-      final result=
-      await _repository
-          .getApprovedApartments();
-
-      setState((){
-
-        apartments=result;
-
-        isLoading=false;
-
-      });
-
-    }catch(e){
-
-      setState((){
-
-        isLoading=false;
-
-      });
-
-    }
+    apartmentController
+        .loadApartments();
   }
 
   @override
-  Widget build(BuildContext context){
+  Widget build(BuildContext context) {
 
-    final pages=[
+    final pages = [
 
-      _HomeContent(
-        apartments:apartments,
-      ),
+      const _HomeContent(),
 
       SearchPage(
-        apartments:apartments,
+        apartments:
+        apartmentController
+            .apartments,
       ),
 
       const ProfilePage(),
     ];
 
-    return Scaffold(
+    return Obx(() {
 
-      body:isLoading
+      return Scaffold(
 
-          ?const Center(
-        child:CircularProgressIndicator(),
-      )
+        body:
+        apartmentController
+            .isLoading
+            .value
 
-          :pages[selectedIndex],
+            ? const Center(
+          child:
+          CircularProgressIndicator(),
+        )
 
-      bottomNavigationBar:
-      NavigationBar(
+            : pages[selectedIndex],
 
-        selectedIndex:selectedIndex,
+        bottomNavigationBar:
+        NavigationBar(
 
-        backgroundColor:
-        AppColors.surface,
+          selectedIndex:
+          selectedIndex,
 
-        indicatorColor:
-        AppColors.primary
-            .withOpacity(.15),
+          backgroundColor:
+          AppColors.surface,
 
-        onDestinationSelected:(value){
-
-          setState((){
-
-            selectedIndex=value;
-
-          });
-        },
-
-        destinations:const[
-
-          NavigationDestination(
-
-            icon:Icon(
-              Icons.home_outlined,
-            ),
-
-            selectedIcon:
-            Icon(Icons.home),
-
-            label:'Home',
+          indicatorColor:
+          AppColors.primary
+              .withValues(
+            alpha: .15,
           ),
 
-          NavigationDestination(
+          onDestinationSelected:
+              (value) {
 
-            icon:Icon(
-              Icons.search,
+            setState(() {
+
+              selectedIndex =
+                  value;
+            });
+          },
+
+          destinations: const [
+
+            NavigationDestination(
+
+              icon: Icon(
+                Icons.home_outlined,
+              ),
+
+              selectedIcon:
+              Icon(Icons.home),
+
+              label: 'Home',
             ),
 
-            selectedIcon:
-            Icon(Icons.search),
+            NavigationDestination(
 
-            label:'Search',
-          ),
+              icon: Icon(
+                Icons.search,
+              ),
 
-          NavigationDestination(
+              selectedIcon:
+              Icon(Icons.search),
 
-            icon:Icon(
-              Icons.person_outline,
+              label: 'Search',
             ),
 
-            selectedIcon:
-            Icon(Icons.person),
+            NavigationDestination(
 
-            label:'Profile',
-          ),
-        ],
-      ),
-    );
+              icon: Icon(
+                Icons.person_outline,
+              ),
+
+              selectedIcon:
+              Icon(Icons.person),
+
+              label: 'Profile',
+            ),
+          ],
+        ),
+      );
+    });
   }
 }
 
 class _HomeContent
-    extends StatelessWidget{
+    extends StatelessWidget {
 
-  final List<ApartmentModel> apartments;
-
-  const _HomeContent({
-    required this.apartments,
-  });
+  const _HomeContent();
 
   @override
-  Widget build(BuildContext context){
+  Widget build(BuildContext context) {
+
+    final apartmentController =
+    Get.find<
+        ApartmentController>();
 
     return SafeArea(
 
-      child:RefreshIndicator(
+      child: RefreshIndicator(
 
-        onRefresh:()async{
+        onRefresh: () async {
 
-          Navigator.pushReplacement(
-
-            context,
-
-            MaterialPageRoute(
-
-              builder:(_)=>const HomePage(),
-            ),
-          );
+          await apartmentController
+              .loadApartments();
         },
 
-        child:ListView(
+        child: Obx(() {
 
-          padding:const EdgeInsets.all(
-            AppSpacing.screen,
-          ),
+          final apartments =
+              apartmentController
+                  .apartments;
 
-          children:[
+          return ListView(
 
-//header
-            Row(
-
-              children:[
-
-                const Expanded(
-
-                  child:Text(
-
-                    'SAKAN 🏠\nFind your next stay',
-
-                    style:
-                    AppTextStyles.h1,
-                  ),
-                ),
-
-                IconButton.filledTonal(
-
-                  onPressed:(){},
-
-                  icon:const Icon(
-                    Icons.notifications_none,
-                  ),
-                ),
-              ],
+            padding:
+            const EdgeInsets.all(
+              AppSpacing.screen,
             ),
 
-            const SizedBox(height:24),
+            children: [
 
-//search box
-            GestureDetector(
+              /// header
+              Row(
 
-              onTap:(){
+                children: [
 
-                Navigator.push(
+                  const Expanded(
 
-                  context,
+                    child: Text(
 
-                  MaterialPageRoute(
+                      'SAKAN \nFind your next stay',
 
-                    builder:(_)=>SearchPage(
-                      apartments:apartments,
+                      style:
+                      AppTextStyles.h1,
                     ),
                   ),
-                );
-              },
 
-              child:Container(
+                  IconButton
+                      .filledTonal(
 
-                padding:
-                const EdgeInsets.symmetric(
-                  horizontal:16,
-                  vertical:15,
-                ),
+                    onPressed: () {},
 
-                decoration:BoxDecoration(
-
-                  color:AppColors.surface,
-
-                  borderRadius:
-                  BorderRadius.circular(22),
-
-                  border:Border.all(
-                    color:AppColors.border,
-                  ),
-                ),
-
-                child:const Row(
-
-                  children:[
-
-                    Icon(
-                      Icons.search,
-                      color:AppColors.muted,
+                    icon: const Icon(
+                      Icons
+                          .notifications_none,
                     ),
-
-                    SizedBox(width:10),
-
-                    Text(
-
-                      'Search city or district',
-
-                      style:TextStyle(
-                        color:AppColors.muted,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
-            const SizedBox(height:26),
-
-//section title
-            const SectionTitle(
-
-              title:'Available Apartments',
-
-              actionText:'Refresh',
-            ),
-
-            const SizedBox(height:14),
-
-//empty state
-            if(apartments.isEmpty)
-
-              const Padding(
-
-                padding:EdgeInsets.all(40),
-
-                child:Center(
-
-                  child:Text(
-                    'No apartments found',
                   ),
-                ),
+                ],
               ),
 
-//apartments
-            ...apartments.map((apartment){
+              const SizedBox(
+                height: 24,
+              ),
 
-              return ApartmentCard(
+              /// search box
+              GestureDetector(
 
-                apartment:apartment,
+                onTap: () {
 
-                onTap:(){
-
-                  Navigator.push(
-
-                    context,
-
-                    MaterialPageRoute(
-
-                      builder:(_)=>DetailPage(
-                        apartment:apartment,
-                      ),
+                  Get.to(
+                        () => SearchPage(
+                      apartments:
+                      apartments,
                     ),
                   );
                 },
-              );
 
-            }).toList(),
-          ],
-        ),
+                child: Container(
+
+                  padding:
+                  const EdgeInsets
+                      .symmetric(
+                    horizontal: 16,
+                    vertical: 15,
+                  ),
+
+                  decoration:
+                  BoxDecoration(
+
+                    color:
+                    AppColors
+                        .surface,
+
+                    borderRadius:
+                    BorderRadius
+                        .circular(
+                      22,
+                    ),
+
+                    border:
+                    Border.all(
+                      color:
+                      AppColors
+                          .border,
+                    ),
+                  ),
+
+                  child: const Row(
+
+                    children: [
+
+                      Icon(
+
+                        Icons.search,
+
+                        color:
+                        AppColors
+                            .muted,
+                      ),
+
+                      SizedBox(
+                        width: 10,
+                      ),
+
+                      Text(
+
+                        'Search city or district',
+
+                        style:
+                        TextStyle(
+                          color:
+                          AppColors
+                              .muted,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              const SizedBox(
+                height: 26,
+              ),
+
+              /// title
+              const SectionTitle(
+
+                title:
+                'Available Apartments',
+
+                actionText:
+                'Refresh',
+              ),
+
+              const SizedBox(
+                height: 14,
+              ),
+
+              /// empty
+              if (apartments
+                  .isEmpty)
+
+                const Padding(
+
+                  padding:
+                  EdgeInsets.all(
+                    40,
+                  ),
+
+                  child: Center(
+
+                    child: Text(
+                      'No apartments found',
+                    ),
+                  ),
+                ),
+
+              /// apartments
+              ...apartments.map(
+                    (apartment) {
+
+                  return ApartmentCard(
+
+                    apartment:
+                    apartment,
+
+                    onTap: () {
+
+                      Get.to(
+                            () =>
+                            DetailPage(
+                              apartment:
+                              apartment,
+                            ),
+                      );
+                    },
+                  );
+                },
+              ),
+            ],
+          );
+        }),
       ),
     );
   }

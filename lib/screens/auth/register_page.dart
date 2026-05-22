@@ -1,204 +1,216 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+
+import '../../controllers/auth/auth_controller.dart';
 
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_text_styles.dart';
-
-import '../../services/auth_service.dart';
 
 import '../../widgets/common/app_text_field.dart';
 import '../../widgets/common/primary_button.dart';
 
 import '../home/home_page.dart';
 
-class RegisterPage extends StatefulWidget{
-  const RegisterPage({super.key});
+class RegisterPage extends StatefulWidget {
+
+  const RegisterPage({
+    super.key,
+  });
 
   @override
-  State<RegisterPage> createState()=>
+  State<RegisterPage> createState() =>
       _RegisterPageState();
 }
 
 class _RegisterPageState
-    extends State<RegisterPage>{
+    extends State<RegisterPage> {
 
-  final formKey=
+  final formKey =
   GlobalKey<FormState>();
 
-  final nameController=
+  final nameController =
   TextEditingController();
 
-  final phoneController=
+  final phoneController =
   TextEditingController();
 
-  final passwordController=
+  final passwordController =
   TextEditingController();
 
-  bool isLoading=false;
+  final authController =
+  Get.find<AuthController>();
 
   @override
-  void dispose(){
+  void dispose() {
 
     nameController.dispose();
+
     phoneController.dispose();
+
     passwordController.dispose();
 
     super.dispose();
   }
 
-  ///register
-  Future<void> register()async{
+  /// register
+  Future<void> register() async {
 
-    if(!formKey.currentState!
-        .validate()){
+    if (!formKey.currentState!
+        .validate()) {
+
       return;
     }
 
-    setState((){
-      isLoading=true;
-    });
+    final success =
+    await authController.login(
 
-    try{
+      phone:
+      phoneController.text.trim(),
 
-      final success=
-      await AuthService.register(
-        name:nameController.text.trim(),
-        phone:phoneController.text.trim(),
-        password:
-        passwordController.text.trim(),
-      );
+      password:
+      passwordController.text.trim(),
+    );
 
-      if(!mounted){
-        return;
-      }
-
-      if(!success){
-
-        ScaffoldMessenger.of(context)
-            .showSnackBar(
-          const SnackBar(
-            content:Text(
-              'Register failed',
-            ),
-          ),
-        );
-
-        return;
-      }
-
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder:(_)=>const HomePage(),
-        ),
-      );
-
-    }catch(e){
-
-      ScaffoldMessenger.of(context)
-          .showSnackBar(
-        SnackBar(
-          content:Text(
-            e.toString(),
-          ),
-        ),
-      );
-
-    }finally{
-
-      if(mounted){
-
-        setState((){
-          isLoading=false;
-        });
-      }
+    if (!mounted) {
+      return;
     }
+
+    if (!success) {
+
+      Get.snackbar(
+
+        'Error',
+
+        'Register failed',
+
+        snackPosition:
+        SnackPosition.BOTTOM,
+      );
+
+      return;
+    }
+
+    Get.offAll(
+          () => const HomePage(),
+    );
   }
 
   @override
-  Widget build(BuildContext context){
+  Widget build(BuildContext context) {
 
     return Scaffold(
 
-      appBar:AppBar(),
+      appBar: AppBar(),
 
-      body:SafeArea(
+      body: SafeArea(
 
-        child:Padding(
+        child: Padding(
 
           padding:
           const EdgeInsets.all(
             AppSpacing.screen,
           ),
 
-          child:Form(
+          child: Form(
 
-            key:formKey,
+            key: formKey,
 
-            child:Column(
+            child: Column(
 
               crossAxisAlignment:
               CrossAxisAlignment.start,
 
-              children:[
+              children: [
 
                 const Text(
+
                   'Créer un compte',
+
                   style:
                   AppTextStyles.h1,
                 ),
 
-                const SizedBox(height:8),
+                const SizedBox(height: 8),
 
                 const Text(
+
                   'Créez votre compte pour continuer.',
+
                   style:
                   AppTextStyles.muted,
                 ),
 
-                const SizedBox(height:30),
+                const SizedBox(height: 30),
 
                 AppTextField(
-                  label:'Nom complet',
+
+                  label:
+                  'Nom complet',
+
                   icon:
                   Icons.person_outline,
+
                   controller:
                   nameController,
                 ),
 
-                const SizedBox(height:14),
+                const SizedBox(height: 14),
 
                 AppTextField(
+
                   label:
                   'Numéro de téléphone',
+
                   icon:
                   Icons.phone_outlined,
-                  isPhone:true,
+
+                  isPhone: true,
+
                   controller:
                   phoneController,
                 ),
 
-                const SizedBox(height:14),
+                const SizedBox(height: 14),
 
                 AppTextField(
-                  label:'Mot de passe',
+
+                  label:
+                  'Mot de passe',
+
                   icon:
                   Icons.lock_outline,
-                  isPassword:true,
+
+                  isPassword: true,
+
                   controller:
                   passwordController,
                 ),
 
-                const SizedBox(height:24),
+                const SizedBox(height: 24),
 
-                PrimaryButton(
-                  text:isLoading
-                      ?'Chargement...'
-                      :'Créer',
-                  onPressed:
-                  isLoading
-                      ?null
-                      :register,
-                ),
+                Obx(() {
+
+                  return PrimaryButton(
+
+                    text:
+                    authController
+                        .isLoading
+                        .value
+
+                        ? 'Chargement...'
+
+                        : 'Créer',
+
+                    onPressed:
+                    authController
+                        .isLoading
+                        .value
+
+                        ? null
+
+                        : register,
+                  );
+                }),
               ],
             ),
           ),

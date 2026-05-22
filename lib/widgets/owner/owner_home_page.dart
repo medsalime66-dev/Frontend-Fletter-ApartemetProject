@@ -1,247 +1,224 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+
+import '../../controllers/auth/auth_controller.dart';
+
+import '../../controllers/apartment/apartment_controller.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_text_styles.dart';
 
-import '../../models/apartment_model.dart';
-
-import '../../repositories/apartment_repository.dart';
 import '../../screens/owner/create_apartment_page.dart';
-import '../../services/auth_service.dart';
 
 import '../../widgets/apartment/apartment_card.dart';
+
 import '../../widgets/common/empty_state.dart';
 import '../../widgets/common/loading_skeleton.dart';
 
 import '../../screens/auth/login_page.dart';
+
 import '../../screens/detail/detail_page.dart';
+
 import '../../screens/owner/owner_notifications_page.dart';
+
 import '../../screens/owner/owner_reservations_page.dart';
 
-class OwnerHomePage extends StatefulWidget{
+class OwnerHomePage
+    extends StatefulWidget {
 
   const OwnerHomePage({
     super.key,
   });
 
   @override
-  State<OwnerHomePage> createState()=>
+  State<OwnerHomePage> createState() =>
       _OwnerHomePageState();
 }
 
 class _OwnerHomePageState
-    extends State<OwnerHomePage>{
+    extends State<OwnerHomePage> {
 
-  final repository=
-  ApartmentRepository();
+  final authController =
+  Get.find<AuthController>();
 
-  List<ApartmentModel> apartments=[];
-
-  bool isLoading=true;
+  final apartmentController =
+  Get.find<ApartmentController>();
 
   @override
-  void initState(){
+  void initState() {
 
     super.initState();
 
-    loadApartments();
+    apartmentController
+        .loadOwnerApartments();
   }
 
-  ///load apartments
-  Future<void> loadApartments()async{
+  /// logout
+  Future<void> logout() async {
 
-    try{
+    await authController.logout();
 
-      final result =
-      await repository
-          .getOwnerApartments();
-
-      setState((){
-
-        apartments=result;
-
-        isLoading=false;
-      });
-
-    }catch(e){
-
-      setState((){
-        isLoading=false;
-      });
-    }
-  }
-
-  ///logout
-  Future<void> logout()async{
-
-    await AuthService.logout();
-
-    if(!mounted){
-      return;
-    }
-
-    Navigator.pushAndRemoveUntil(
-
-      context,
-
-      MaterialPageRoute(
-        builder:(_)=>const LoginPage(),
-      ),
-
-          (route)=>false,
+    Get.offAll(
+          () => const LoginPage(),
     );
   }
 
   @override
-  Widget build(BuildContext context){
+  Widget build(BuildContext context) {
 
-    return Scaffold(
+    return Obx(() {
 
-      appBar:AppBar(
+      final apartments =
+          apartmentController
+              .ownerApartments;
 
-        title:const Text(
-          'Owner Dashboard',
-        ),
+      final isLoading =
+          apartmentController
+              .isLoading
+              .value;
 
-        actions:[
+      return Scaffold(
 
-          IconButton(
+        appBar: AppBar(
 
-            onPressed:(){
+          title: const Text(
+            'Owner Dashboard',
+          ),
 
-              Navigator.push(
+          actions: [
 
-                context,
+            IconButton(
 
-                MaterialPageRoute(
+              onPressed: () {
 
-                  builder:(_)=>
+                Get.to(
+                      () =>
                   const OwnerReservationsPage(),
-                ),
-              );
-            },
+                );
+              },
 
-            icon:const Icon(
-              Icons.calendar_month,
+              icon: const Icon(
+                Icons.calendar_month,
+              ),
             ),
-          ),
 
-          IconButton(
+            IconButton(
 
-            onPressed:(){
+              onPressed: () {
 
-              Navigator.push(
-
-                context,
-
-                MaterialPageRoute(
-
-                  builder:(_)=>
+                Get.to(
+                      () =>
                   const OwnerNotificationsPage(),
-                ),
-              );
-            },
+                );
+              },
 
-            icon:const Icon(
-              Icons.notifications_none,
-            ),
-          ),
-
-          IconButton(
-
-            onPressed:logout,
-
-            icon:const Icon(
-              Icons.logout,
-            ),
-          ),
-        ],
-      ),
-
-      body:isLoading
-
-          ?const LoadingSkeleton()
-
-          :apartments.isEmpty
-
-          ?const EmptyState(
-        text:'No apartments found',
-      )
-
-          :RefreshIndicator(
-
-        onRefresh:loadApartments,
-
-        child:ListView(
-
-          padding:const EdgeInsets.all(
-            AppSpacing.screen,
-          ),
-
-          children:[
-
-            const Text(
-              'My Apartments',
-              style:AppTextStyles.h1,
+              icon: const Icon(
+                Icons.notifications_none,
+              ),
             ),
 
-            const SizedBox(height:24),
+            IconButton(
 
-            ...apartments.map((apartment){
+              onPressed: logout,
 
-              return ApartmentCard(
-
-                apartment:apartment,
-
-                onTap:(){
-
-                  Navigator.push(
-
-                    context,
-
-                    MaterialPageRoute(
-
-                      builder:(_)=>DetailPage(
-                        apartment:apartment,
-                      ),
-                    ),
-                  );
-                },
-              );
-            }),
+              icon: const Icon(
+                Icons.logout,
+              ),
+            ),
           ],
         ),
-      ),
 
-      floatingActionButton:
-      FloatingActionButton.extended(
+        body: isLoading
 
-        backgroundColor:
-        AppColors.primary,
+            ? const LoadingSkeleton()
 
-        onPressed:(){
+            : apartments.isEmpty
 
-          Navigator.push(
+            ? const EmptyState(
+          text:
+          'No apartments found',
+        )
 
-            context,
+            : RefreshIndicator(
 
-            MaterialPageRoute(
+          onRefresh: () async {
 
-              builder:(_)=>
-              const CreateApartmentPage(),
+            await apartmentController
+                .loadOwnerApartments();
+          },
+
+          child: ListView(
+
+            padding:
+            const EdgeInsets.all(
+              AppSpacing.screen,
             ),
-          );
-        },
 
-        icon:const Icon(
-          Icons.add,
+            children: [
+
+              const Text(
+
+                'My Apartments',
+
+                style:
+                AppTextStyles.h1,
+              ),
+
+              const SizedBox(
+                height: 24,
+              ),
+
+              ...apartments.map(
+                    (apartment) {
+
+                  return ApartmentCard(
+
+                    apartment:
+                    apartment,
+
+                    onTap: () {
+
+                      Get.to(
+                            () => DetailPage(
+                          apartment:
+                          apartment,
+                        ),
+                      );
+                    },
+                  );
+                },
+              ),
+            ],
+          ),
         ),
 
-        label:const Text(
-          'Add Apartment',
+        floatingActionButton:
+        FloatingActionButton.extended(
+
+          backgroundColor:
+          AppColors.primary,
+
+          onPressed: () async {
+
+            await Get.to(
+                  () =>
+              const CreateApartmentPage(),
+            );
+
+            apartmentController
+                .loadOwnerApartments();
+          },
+
+          icon: const Icon(
+            Icons.add,
+          ),
+
+          label: const Text(
+            'Add Apartment',
+          ),
         ),
-      ),
-    );
+      );
+    });
   }
 }

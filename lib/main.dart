@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+
+import 'core/bindings/initial_binding.dart';
 
 import 'core/network/api_client.dart';
 import 'core/theme/app_theme.dart';
 
 import 'screens/auth/splash_page.dart';
 
-void main() async{
+void main() async {
 
   WidgetsFlutterBinding.ensureInitialized();
 
-  ///initialize api client
+  /// initialize api client
   await ApiClient.init();
 
   runApp(
@@ -17,22 +20,28 @@ void main() async{
   );
 }
 
-class SakanApp extends StatelessWidget{
+class SakanApp
+    extends StatelessWidget {
 
-  const SakanApp({super.key});
+  const SakanApp({
+    super.key,
+  });
 
   @override
-  Widget build(BuildContext context){
+  Widget build(BuildContext context) {
 
-    return MaterialApp(
+    return GetMaterialApp(
 
-      title:'Sakan',
+      title: 'SAKAN',
 
-      debugShowCheckedModeBanner:false,
+      debugShowCheckedModeBanner: false,
 
-      theme:AppTheme.light,
+      initialBinding:
+      InitialBinding(),
 
-      home:const SplashPage(),
+      theme: AppTheme.light,
+
+      home: const SplashPage(),
     );
   }
 }
