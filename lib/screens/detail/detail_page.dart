@@ -386,7 +386,7 @@ class DetailPage extends StatelessWidget {
                               style:
                               const TextStyle(
 
-                                fontSize: 28,
+                                fontSize: 25,
 
                                 fontWeight:
                                 FontWeight.w900,

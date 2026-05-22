@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-
+import '../../core/config/app_config.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_radius.dart';
 import '../../core/theme/app_spacing.dart';
@@ -10,11 +10,8 @@ import '../../models/apartment_model.dart';
 class ApartmentCard extends StatelessWidget{
 
   final ApartmentModel apartment;
-
   final VoidCallback onTap;
-
   final VoidCallback? onApprove;
-
   final bool showApproveButton;
 
   const ApartmentCard({
@@ -25,13 +22,30 @@ class ApartmentCard extends StatelessWidget{
     this.showApproveButton=false,
   });
 
-  String get mainImage{
+  String get mainImage {
 
-    if(apartment.imageUrls.isEmpty){
+    if (
+    apartment.imageUrls.isEmpty
+    ) {
       return '';
     }
 
-    return apartment.imageUrls.first;
+    final path =
+        apartment.imageUrls.first;
+
+    /// already full url
+    if (
+    path.startsWith('http')
+    ) {
+
+      return path;
+    }
+
+    final serverUrl =
+    AppConfig.baseUrl
+        .replaceAll('/api', '');
+
+    return '$serverUrl/$path';
   }
 
   @override

@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 
+import '../../core/config/app_config.dart';
 import '../../core/theme/app_colors.dart';
 
-class ApartmentGallery extends StatefulWidget{
+class ApartmentGallery extends StatefulWidget {
 
   final List<String> images;
 
@@ -12,47 +13,67 @@ class ApartmentGallery extends StatefulWidget{
   });
 
   @override
-  State<ApartmentGallery> createState()=>
+  State<ApartmentGallery> createState() =>
       _ApartmentGalleryState();
 }
 
 class _ApartmentGalleryState
-    extends State<ApartmentGallery>{
+    extends State<ApartmentGallery> {
 
-  final controller=
-  PageController();
+  final controller = PageController();
 
-  int current=0;
+  int current = 0;
 
   @override
-  void dispose(){
+  void dispose() {
 
     controller.dispose();
 
     super.dispose();
   }
 
-  @override
-  Widget build(BuildContext context){
+  String buildImageUrl(String path) {
 
-//empty images
-    if(widget.images.isEmpty){
+    if (path.isEmpty) {
+      return '';
+    }
+
+    /// already full url
+    if (path.startsWith('http')) {
+      return path;
+    }
+
+    final serverUrl =
+        AppConfig.serverUrl;
+
+    if (path.startsWith('/')) {
+      return '$serverUrl$path';
+    }
+
+    return '$serverUrl/$path';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+
+    // empty images
+    if (widget.images.isEmpty) {
 
       return Container(
 
-        height:320,
+        height: 320,
 
-        color:AppColors.border,
+        color: AppColors.border,
 
-        child:const Center(
+        child: const Center(
 
-          child:Icon(
+          child: Icon(
 
             Icons.apartment,
 
-            size:90,
+            size: 90,
 
-            color:AppColors.muted,
+            color: AppColors.muted,
           ),
         ),
       );
@@ -60,16 +81,16 @@ class _ApartmentGalleryState
 
     return SizedBox(
 
-      height:320,
+      height: 320,
 
-      child:Stack(
+      child: Stack(
 
-        children:[
+        children: [
 
-//gallery
+          /// gallery
           PageView.builder(
 
-            controller:controller,
+            controller: controller,
 
             physics:
             const BouncingScrollPhysics(),
@@ -77,40 +98,45 @@ class _ApartmentGalleryState
             itemCount:
             widget.images.length,
 
-            onPageChanged:(value){
+            onPageChanged: (value) {
 
-              setState((){
+              setState(() {
 
-                current=value;
-
+                current = value;
               });
             },
 
-            itemBuilder:(_,index){
+            itemBuilder: (_, index) {
 
-              final image=
-              widget.images[index];
+              final image =
+              buildImageUrl(
+                widget.images[index],
+              );
 
               return Image.network(
 
                 image,
 
-                fit:BoxFit.cover,
+                fit: BoxFit.cover,
 
-                width:double.infinity,
+                width: double.infinity,
 
                 loadingBuilder:
-                    (context,child,progress){
+                    (
+                    context,
+                    child,
+                    progress,
+                    ) {
 
-                  if(progress==null){
+                  if (progress == null) {
                     return child;
                   }
 
                   return Container(
 
-                    color:AppColors.border,
+                    color: AppColors.border,
 
-                    child:const Center(
+                    child: const Center(
 
                       child:
                       CircularProgressIndicator(),
@@ -119,19 +145,19 @@ class _ApartmentGalleryState
                 },
 
                 errorBuilder:
-                    (_,__,___){
+                    (_, __, ___) {
 
                   return Container(
 
-                    color:AppColors.border,
+                    color: AppColors.border,
 
-                    child:const Center(
+                    child: const Center(
 
-                      child:Icon(
+                      child: Icon(
 
                         Icons.broken_image_outlined,
 
-                        size:70,
+                        size: 70,
 
                         color:
                         AppColors.muted,
@@ -143,20 +169,20 @@ class _ApartmentGalleryState
             },
           ),
 
-//gradient overlay
+          /// gradient overlay
           Positioned(
 
-            bottom:0,
-            left:0,
-            right:0,
+            bottom: 0,
+            left: 0,
+            right: 0,
 
-            child:Container(
+            child: Container(
 
-              height:120,
+              height: 120,
 
-              decoration:BoxDecoration(
+              decoration: BoxDecoration(
 
-                gradient:LinearGradient(
+                gradient: LinearGradient(
 
                   begin:
                   Alignment.topCenter,
@@ -164,48 +190,50 @@ class _ApartmentGalleryState
                   end:
                   Alignment.bottomCenter,
 
-                  colors:[
+                  colors: [
 
                     Colors.transparent,
 
-                    Colors.black
-                        .withOpacity(.45),
+                    Colors.black.withValues(
+                      alpha: .45,
+                    ),
                   ],
                 ),
               ),
             ),
           ),
 
-//counter
+          /// counter
           Positioned(
 
-            top:50,
-            right:18,
+            top: 50,
+            right: 18,
 
-            child:Container(
+            child: Container(
 
               padding:
               const EdgeInsets.symmetric(
-                horizontal:12,
-                vertical:7,
+                horizontal: 12,
+                vertical: 7,
               ),
 
-              decoration:BoxDecoration(
+              decoration: BoxDecoration(
 
                 color:
-                Colors.black
-                    .withOpacity(.45),
+                Colors.black.withValues(
+                  alpha: .45,
+                ),
 
                 borderRadius:
                 BorderRadius.circular(100),
               ),
 
-              child:Text(
+              child: Text(
 
-                "${current+1}/${widget.images.length}",
+                "${current + 1}/${widget.images.length}",
 
-                style:const TextStyle(
-                  color:Colors.white,
+                style: const TextStyle(
+                  color: Colors.white,
                   fontWeight:
                   FontWeight.bold,
                 ),
@@ -213,53 +241,55 @@ class _ApartmentGalleryState
             ),
           ),
 
-//indicators
+          /// indicators
           Positioned(
 
-            bottom:22,
-            left:0,
-            right:0,
+            bottom: 22,
+            left: 0,
+            right: 0,
 
-            child:Row(
+            child: Row(
 
               mainAxisAlignment:
               MainAxisAlignment.center,
 
-              children:List.generate(
+              children: List.generate(
 
                 widget.images.length,
 
-                    (index){
+                    (index) {
 
-                  final isActive=
-                      current==index;
+                  final isActive =
+                      current == index;
 
                   return AnimatedContainer(
 
                     duration:
                     const Duration(
-                      milliseconds:250,
+                      milliseconds: 250,
                     ),
 
                     margin:
                     const EdgeInsets.symmetric(
-                      horizontal:4,
+                      horizontal: 4,
                     ),
 
-                    width:isActive?24:8,
+                    width:
+                    isActive ? 24 : 8,
 
-                    height:8,
+                    height: 8,
 
-                    decoration:BoxDecoration(
+                    decoration: BoxDecoration(
 
                       color:
 
                       isActive
 
-                          ?Colors.white
+                          ? Colors.white
 
-                          :Colors.white
-                          .withOpacity(.45),
+                          : Colors.white.withValues(
+                        alpha: .45,
+                      ),
 
                       borderRadius:
                       BorderRadius.circular(50),
