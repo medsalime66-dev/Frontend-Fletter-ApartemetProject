@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+
+import '../../controllers/reservation/reservation_controller.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
@@ -13,11 +16,10 @@ import '../../widgets/common/primary_button.dart';
 
 import '../../widgets/payment/wallet_option_card.dart';
 
-import '../../services/reservation_service.dart';
-
 import '../confirmation/confirmation_page.dart';
 
-class PaymentPage extends StatefulWidget {
+class PaymentPage
+    extends StatefulWidget {
 
   final ApartmentModel apartment;
 
@@ -43,6 +45,9 @@ class PaymentPage extends StatefulWidget {
 class _PaymentPageState
     extends State<PaymentPage> {
 
+  final reservationController =
+  Get.find<ReservationController>();
+
   String selectedWallet =
       mockWallets.first.name;
 
@@ -52,119 +57,82 @@ class _PaymentPageState
   final codeController =
   TextEditingController();
 
-  bool isLoading = false;
-
   @override
   void dispose() {
 
     phoneController.dispose();
+
     codeController.dispose();
 
     super.dispose();
   }
 
+  /// confirm payment
   Future<void> confirmPayment() async {
 
     if (phoneController.text.isEmpty ||
         codeController.text.isEmpty) {
 
-      ScaffoldMessenger.of(context)
-          .showSnackBar(
+      Get.snackbar(
 
-        const SnackBar(
+        'Error',
 
-          content: Text(
-            'Please fill all fields',
-          ),
-        ),
+        'Please fill all fields',
+
+        snackPosition:
+        SnackPosition.BOTTOM,
       );
 
       return;
     }
 
-    setState(() {
-      isLoading = true;
-    });
-
     try {
 
-      /// simulate payment success
-
+      /// simulate payment
       await Future.delayed(
         const Duration(seconds: 2),
       );
 
-      /// create reservation ONLY after payment
-
+      /// create reservation
       final success =
-      await ReservationService
-          .createReservation(
+      await reservationController
+          .createReservation();
 
-        apartmentId:
-        widget.apartment.id,
-
-        startDate:
-        widget.startDate
-            .toIso8601String()
-            .split('T')[0],
-
-        endDate:
-        widget.endDate
-            .toIso8601String()
-            .split('T')[0],
-      );
-
-      if (!mounted) return;
+      if (!mounted) {
+        return;
+      }
 
       if (success) {
 
-        Navigator.pushAndRemoveUntil(
-
-          context,
-
-          MaterialPageRoute(
-
-            builder: (_) =>
-            const ConfirmationPage(),
-          ),
-
-              (route) => false,
+        Get.offAll(
+              () =>
+          const ConfirmationPage(),
         );
 
         return;
       }
 
-      ScaffoldMessenger.of(context)
-          .showSnackBar(
+      Get.snackbar(
 
-        const SnackBar(
+        'Error',
 
-          content: Text(
-            'Reservation failed',
-          ),
-        ),
+        'Reservation failed',
+
+        snackPosition:
+        SnackPosition.BOTTOM,
       );
 
     } catch (e) {
 
-      ScaffoldMessenger.of(context)
-          .showSnackBar(
+      Get.snackbar(
 
-        SnackBar(
-          content: Text(
-            e.toString(),
-          ),
-        ),
+        'Payment Error',
+
+        e.toString(),
+
+        snackPosition:
+        SnackPosition.BOTTOM,
       );
-
-    } finally {
-
-      if (mounted) {
-
-        setState(() {
-          isLoading = false;
-        });
-      }
     }
   }
 
@@ -176,31 +144,41 @@ class _PaymentPageState
       appBar: AppBar(
 
         title: const Text(
+
           'Payment',
-          style: AppTextStyles.h2,
+
+          style:
+          AppTextStyles.h2,
         ),
       ),
 
       body: ListView(
 
-        padding: const EdgeInsets.all(
+        padding:
+        const EdgeInsets.all(
           AppSpacing.screen,
         ),
 
         children: [
 
-          /// card
+          /// payment card
           Container(
 
             padding:
-            const EdgeInsets.all(24),
+            const EdgeInsets.all(
+              24,
+            ),
 
-            decoration: BoxDecoration(
+            decoration:
+            BoxDecoration(
 
-              color: AppColors.text,
+              color:
+              AppColors.text,
 
               borderRadius:
-              BorderRadius.circular(28),
+              BorderRadius.circular(
+                28,
+              ),
             ),
 
             child: Column(
@@ -215,19 +193,24 @@ class _PaymentPageState
                   'Total Amount',
 
                   style: TextStyle(
-                    color: Colors.white70,
+                    color:
+                    Colors.white70,
                   ),
                 ),
 
-                const SizedBox(height: 8),
+                const SizedBox(
+                  height: 8,
+                ),
 
                 Text(
 
                   '${widget.total} MRU',
 
-                  style: const TextStyle(
+                  style:
+                  const TextStyle(
 
-                    color: Colors.white,
+                    color:
+                    Colors.white,
 
                     fontSize: 34,
 
@@ -236,30 +219,42 @@ class _PaymentPageState
                   ),
                 ),
 
-                const SizedBox(height: 12),
+                const SizedBox(
+                  height: 12,
+                ),
 
                 Text(
 
                   'Owner Wallet: ${widget.apartment.walletCode}',
 
-                  style: const TextStyle(
-                    color: Colors.white70,
+                  style:
+                  const TextStyle(
+                    color:
+                    Colors.white70,
                   ),
                 ),
               ],
             ),
           ),
 
-          const SizedBox(height: 28),
-
-          /// wallets
-          const Text(
-            'Wallet',
-            style: AppTextStyles.h2,
+          const SizedBox(
+            height: 28,
           ),
 
-          const SizedBox(height: 14),
+          /// wallet title
+          const Text(
 
+            'Wallet',
+
+            style:
+            AppTextStyles.h2,
+          ),
+
+          const SizedBox(
+            height: 14,
+          ),
+
+          /// wallets
           ...mockWallets.map((wallet) {
 
             return Padding(
@@ -271,7 +266,8 @@ class _PaymentPageState
 
               child: WalletOptionCard(
 
-                name: wallet.name,
+                name:
+                wallet.name,
 
                 selected:
                 selectedWallet ==
@@ -289,7 +285,9 @@ class _PaymentPageState
             );
           }),
 
-          const SizedBox(height: 20),
+          const SizedBox(
+            height: 20,
+          ),
 
           /// phone
           AppTextField(
@@ -306,7 +304,9 @@ class _PaymentPageState
             isPhone: true,
           ),
 
-          const SizedBox(height: 14),
+          const SizedBox(
+            height: 14,
+          ),
 
           /// code
           AppTextField(
@@ -327,21 +327,36 @@ class _PaymentPageState
             maxLength: 4,
           ),
 
-          const SizedBox(height: 28),
+          const SizedBox(
+            height: 28,
+          ),
 
           /// button
-          PrimaryButton(
+          Obx(() {
 
-            text:
-            isLoading
-                ? 'Processing...'
-                : 'Confirm Payment',
+            return PrimaryButton(
 
-            onPressed:
-            isLoading
-                ? null
-                : confirmPayment,
-          ),
+              text:
+
+              reservationController
+                  .isLoading
+                  .value
+
+                  ? 'Processing...'
+
+                  : 'Confirm Payment',
+
+              onPressed:
+
+              reservationController
+                  .isLoading
+                  .value
+
+                  ? null
+
+                  : confirmPayment,
+            );
+          }),
         ],
       ),
     );

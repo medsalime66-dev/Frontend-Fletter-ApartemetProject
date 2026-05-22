@@ -3,7 +3,10 @@ import 'package:get/get.dart';
 
 import '../../models/apartment_model.dart';
 
-class ReservationController extends GetxController {
+import '../../services/reservation_service.dart';
+
+class ReservationController
+    extends GetxController {
 
   final ApartmentModel apartment;
 
@@ -11,7 +14,7 @@ class ReservationController extends GetxController {
     required this.apartment,
   });
 
-  /// selected dates
+  /// dates
   final Rxn<DateTime> startDate =
   Rxn<DateTime>();
 
@@ -20,6 +23,10 @@ class ReservationController extends GetxController {
 
   /// loading
   final RxBool isLoading =
+      false.obs;
+
+  /// reservation success
+  final RxBool reservationSuccess =
       false.obs;
 
   /// pick dates
@@ -86,7 +93,7 @@ class ReservationController extends GetxController {
         apartment.pricePerNight;
   }
 
-  /// validation
+  /// validate
   bool validateDates() {
 
     if (startDate.value == null ||
@@ -106,5 +113,55 @@ class ReservationController extends GetxController {
     }
 
     return true;
+  }
+
+  /// create reservation
+  Future<bool> createReservation() async {
+
+    try {
+
+      isLoading.value = true;
+
+      final success =
+      await ReservationService
+          .createReservation(
+
+        apartmentId:
+        apartment.id,
+
+        startDate:
+        startDate.value!
+            .toIso8601String()
+            .split('T')[0],
+
+        endDate:
+        endDate.value!
+            .toIso8601String()
+            .split('T')[0],
+      );
+
+      reservationSuccess.value =
+          success;
+
+      return success;
+
+    } catch (e) {
+
+      Get.snackbar(
+
+        'Reservation Error',
+
+        e.toString(),
+
+        snackPosition:
+        SnackPosition.BOTTOM,
+      );
+
+      return false;
+
+    } finally {
+
+      isLoading.value = false;
+    }
   }
 }
