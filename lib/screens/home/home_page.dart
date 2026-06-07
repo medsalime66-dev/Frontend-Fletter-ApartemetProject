@@ -1,279 +1,103 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+
 import '../../controllers/notification/notification_controller.dart';
 import '../../controllers/apartment/apartment_controller.dart';
 import '../notifications/notification_page.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_text_styles.dart';
-
 import '../../widgets/apartment/apartment_card.dart';
-
 import '../../widgets/common/section_title.dart';
-
 import '../detail/detail_page.dart';
-
 import '../profile/profile_page.dart';
-
 import '../search/search_page.dart';
 
 class HomePage extends StatefulWidget {
-
-  const HomePage({
-    super.key,
-  });
+  const HomePage({super.key});
 
   @override
-  State<HomePage> createState() {
-    return _HomePageState();
-  }
+  State<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState
-    extends State<HomePage> {
+class _HomePageState extends State<HomePage> {
 
-  final apartmentController =
-  Get.find<ApartmentController>();
-
+  final apartmentController = Get.find<ApartmentController>();
   int selectedIndex = 0;
 
   @override
   void initState() {
-
     super.initState();
-
-    apartmentController
-        .loadApartments();
+    apartmentController.loadApartments();
   }
 
   @override
   Widget build(BuildContext context) {
 
     final pages = [
-
       const _HomeContent(),
-
-      SearchPage(
-        apartments:
-        apartmentController
-            .apartments,
-      ),
-
+      SearchPage(apartments: apartmentController.apartments),
       const ProfilePage(),
     ];
 
-    return Obx(() {
-
-      return Scaffold(
-
-        body:
-        apartmentController
-            .isLoading
-            .value
-
-            ? const Center(
-          child:
-          CircularProgressIndicator(),
-        )
-
-            : pages[selectedIndex],
-
-        bottomNavigationBar:
-        NavigationBar(
-
-          selectedIndex:
-          selectedIndex,
-
-          backgroundColor:
-          AppColors.surface,
-
-          indicatorColor:
-          AppColors.primary
-              .withValues(
-            alpha: .15,
-          ),
-
-          onDestinationSelected:
-              (value) {
-
-            setState(() {
-
-              selectedIndex =
-                  value;
-            });
-          },
-
-          destinations: const [
-
-            NavigationDestination(
-
-              icon: Icon(
-                Icons.home_outlined,
-              ),
-
-              selectedIcon:
-              Icon(Icons.home),
-
-              label: 'Home',
-            ),
-
-            NavigationDestination(
-
-              icon: Icon(
-                Icons.search,
-              ),
-
-              selectedIcon:
-              Icon(Icons.search),
-
-              label: 'Search',
-            ),
-
-            NavigationDestination(
-
-              icon: Icon(
-                Icons.person_outline,
-              ),
-
-              selectedIcon:
-              Icon(Icons.person),
-
-              label: 'Profile',
-            ),
-          ],
-        ),
-      );
-    });
+    return Obx(() => Scaffold(
+      body: apartmentController.isLoading.value
+          ? const Center(child: CircularProgressIndicator())
+          : pages[selectedIndex],
+      bottomNavigationBar: NavigationBar(
+        selectedIndex: selectedIndex,
+        backgroundColor: AppColors.surface,
+        indicatorColor: AppColors.primary.withValues(alpha: .15),
+        onDestinationSelected: (value) => setState(() => selectedIndex = value),
+        destinations: [
+          NavigationDestination(icon: const Icon(Icons.home_outlined), selectedIcon: const Icon(Icons.home), label: 'home'.tr),
+          NavigationDestination(icon: const Icon(Icons.search), selectedIcon: const Icon(Icons.search), label: 'search'.tr),
+          NavigationDestination(icon: const Icon(Icons.person_outline), selectedIcon: const Icon(Icons.person), label: 'profile'.tr),
+        ],
+      ),
+    ));
   }
 }
 
-class _HomeContent
-    extends StatelessWidget {
-
+class _HomeContent extends StatelessWidget {
   const _HomeContent();
 
   @override
   Widget build(BuildContext context) {
 
-    final apartmentController =
-    Get.find<
-        ApartmentController>();
+    final apartmentController = Get.find<ApartmentController>();
 
     return SafeArea(
-
       child: RefreshIndicator(
-
-        onRefresh: () async {
-
-          await apartmentController
-              .loadApartments();
-        },
-
+        onRefresh: () async => await apartmentController.loadApartments(),
         child: Obx(() {
-
-          final apartments =
-              apartmentController
-                  .apartments;
-
+          final apartments = apartmentController.apartments;
           return ListView(
-
-            padding:
-            const EdgeInsets.all(
-              AppSpacing.screen,
-            ),
-
+            padding: const EdgeInsets.all(AppSpacing.screen),
             children: [
 
-              /// header
               Row(
-
                 children: [
-
-                  const Expanded(
-
-                    child: Text(
-
-                      'SAKAN \nFind your next stay',
-
-                      style:
-                      AppTextStyles.h1,
-                    ),
-                  ),
-
+                  Expanded(child: Text('SAKAN \n${'available_apartments'.tr}', style: AppTextStyles.h1)),
                   Obx(() {
-
-                    final notificationController =
-                    Get.find<NotificationController>();
-
-                    final unreadCount =
-                        notificationController.notifications
-                            .where(
-                              (n) => !n.isRead,
-                        ).length;
-
+                    final notifController = Get.find<NotificationController>();
+                    final unread = notifController.notifications.where((n) => !n.isRead).length;
                     return Stack(
-
                       clipBehavior: Clip.none,
-
                       children: [
-
                         IconButton(
-
-                          onPressed: () {
-
-                            Get.to(
-                                  () => const NotificationPage(),
-                            );
-                          },
-
-                          icon: const Icon(
-                            Icons.notifications_none,
-                          ),
+                          onPressed: () => Get.to(() => const NotificationPage()),
+                          icon: const Icon(Icons.notifications_none),
                         ),
-
-                        if (unreadCount > 0)
-
+                        if (unread > 0)
                           Positioned(
-
-                            right: 6,
-                            top: 6,
-
+                            right: 6, top: 6,
                             child: Container(
-
-                              padding:
-                              const EdgeInsets.all(5),
-
-                              decoration:
-                              const BoxDecoration(
-
-                                color: Colors.red,
-
-                                shape: BoxShape.circle,
-                              ),
-
-                              constraints:
-                              const BoxConstraints(
-
-                                minWidth: 18,
-                                minHeight: 18,
-                              ),
-
-                              child: Text(
-
-                                unreadCount.toString(),
-
-                                textAlign: TextAlign.center,
-
-                                style: const TextStyle(
-
-                                  color: Colors.white,
-
-                                  fontSize: 10,
-
-                                  fontWeight:
-                                  FontWeight.bold,
-                                ),
-                              ),
+                              padding: const EdgeInsets.all(5),
+                              decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.circle),
+                              constraints: const BoxConstraints(minWidth: 18, minHeight: 18),
+                              child: Text(unread.toString(), textAlign: TextAlign.center,
+                                  style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
                             ),
                           ),
                       ],
@@ -282,145 +106,43 @@ class _HomeContent
                 ],
               ),
 
-              const SizedBox(
-                height: 24,
-              ),
+              const SizedBox(height: 24),
 
-              /// search box
               GestureDetector(
-
-                onTap: () {
-
-                  Get.to(
-                        () => SearchPage(
-                      apartments:
-                      apartments,
-                    ),
-                  );
-                },
-
+                onTap: () => Get.to(() => SearchPage(apartments: apartments)),
                 child: Container(
-
-                  padding:
-                  const EdgeInsets
-                      .symmetric(
-                    horizontal: 16,
-                    vertical: 15,
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
+                  decoration: BoxDecoration(
+                    color: AppColors.surface,
+                    borderRadius: BorderRadius.circular(22),
+                    border: Border.all(color: AppColors.border),
                   ),
-
-                  decoration:
-                  BoxDecoration(
-
-                    color:
-                    AppColors
-                        .surface,
-
-                    borderRadius:
-                    BorderRadius
-                        .circular(
-                      22,
-                    ),
-
-                    border:
-                    Border.all(
-                      color:
-                      AppColors
-                          .border,
-                    ),
-                  ),
-
-                  child: const Row(
-
+                  child: Row(
                     children: [
-
-                      Icon(
-
-                        Icons.search,
-
-                        color:
-                        AppColors
-                            .muted,
-                      ),
-
-                      SizedBox(
-                        width: 10,
-                      ),
-
-                      Text(
-
-                        'Search city or district',
-
-                        style:
-                        TextStyle(
-                          color:
-                          AppColors
-                              .muted,
-                        ),
-                      ),
+                      const Icon(Icons.search, color: AppColors.muted),
+                      const SizedBox(width: 10),
+                      Text('search_hint'.tr, style: const TextStyle(color: AppColors.muted)),
                     ],
                   ),
                 ),
               ),
 
-              const SizedBox(
-                height: 26,
-              ),
+              const SizedBox(height: 26),
 
-              /// title
-              const SectionTitle(
+              SectionTitle(title: 'available_apartments'.tr, actionText: 'refresh'.tr),
 
-                title:
-                'Available Apartments',
+              const SizedBox(height: 14),
 
-                actionText:
-                'Refresh',
-              ),
-
-              const SizedBox(
-                height: 14,
-              ),
-
-              /// empty
-              if (apartments
-                  .isEmpty)
-
-                const Padding(
-
-                  padding:
-                  EdgeInsets.all(
-                    40,
-                  ),
-
-                  child: Center(
-
-                    child: Text(
-                      'No apartments found',
-                    ),
-                  ),
+              if (apartments.isEmpty)
+                Padding(
+                  padding: const EdgeInsets.all(40),
+                  child: Center(child: Text('no_apartments'.tr)),
                 ),
 
-              /// apartments
-              ...apartments.map(
-                    (apartment) {
-
-                  return ApartmentCard(
-
-                    apartment:
-                    apartment,
-
-                    onTap: () {
-
-                      Get.to(
-                            () =>
-                            DetailPage(
-                              apartment:
-                              apartment,
-                            ),
-                      );
-                    },
-                  );
-                },
-              ),
+              ...apartments.map((apartment) => ApartmentCard(
+                apartment: apartment,
+                onTap: () => Get.to(() => DetailPage(apartment: apartment)),
+              )),
             ],
           );
         }),

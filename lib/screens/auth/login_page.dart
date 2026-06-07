@@ -2,295 +2,272 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../controllers/auth/auth_controller.dart';
-
 import '../../core/constants/app_constants.dart';
-
-import '../../core/theme/app_spacing.dart';
-import '../../core/theme/app_text_styles.dart';
-
-import '../../widgets/common/app_text_field.dart';
-import '../../widgets/common/primary_button.dart';
-
-import '../home/home_page.dart';
-
+import '../../core/theme/app_colors.dart';
 import '../../widgets/owner/owner_home_page.dart';
-
-import 'register_page.dart';
+import '../home/home_page.dart';
+import 'register_choose_page.dart';
 
 class LoginPage extends StatefulWidget {
-
-  const LoginPage({
-    super.key,
-  });
+  const LoginPage({super.key});
 
   @override
-  State<LoginPage> createState() =>
-      _LoginPageState();
+  State<LoginPage> createState() => _LoginPageState();
 }
 
-class _LoginPageState
-    extends State<LoginPage> {
+class _LoginPageState extends State<LoginPage> {
 
-  final formKey =
-  GlobalKey<FormState>();
-
-  final phoneController =
-  TextEditingController();
-
-  final passwordController =
-  TextEditingController();
-
-  final authController =
-  Get.find<AuthController>();
+  final formKey          = GlobalKey<FormState>();
+  final phoneController  = TextEditingController();
+  final passController   = TextEditingController();
+  final authController   = Get.find<AuthController>();
+  bool _obscure = true;
 
   @override
   void dispose() {
-
     phoneController.dispose();
-
-    passwordController.dispose();
-
+    passController.dispose();
     super.dispose();
   }
 
-  /// login
   Future<void> login() async {
-
-    if (!formKey.currentState!
-        .validate()) {
-
-      return;
-    }
-
-    final success =
-    await authController.login(
-
-      phone:
-      phoneController.text.trim(),
-
-      password:
-      passwordController.text.trim(),
+    if (!formKey.currentState!.validate()) return;
+    final success = await authController.login(
+      phone: phoneController.text.trim(),
+      password: passController.text.trim(),
     );
-
-    if (!mounted) {
-      return;
-    }
-
+    if (!mounted) return;
     if (!success) {
-
-      Get.snackbar(
-
-        'Error',
-
-        'Login failed',
-
-        snackPosition:
-        SnackPosition.BOTTOM,
-      );
-
+      Get.snackbar('Erreur', 'login_failed'.tr,
+          snackPosition: SnackPosition.BOTTOM);
       return;
     }
-
-    /// owner
-    if (authController.role.value ==
-        AppConstants.ownerRole) {
-
-      Get.offAll(
-            () => const OwnerHomePage(),
-      );
-
-      return;
+    if (authController.role.value == AppConstants.ownerRole) {
+      Get.offAll(() => const OwnerHomePage());
+    } else {
+      Get.offAll(() => const HomePage());
     }
-
-    /// user
-    Get.offAll(
-          () => const HomePage(),
-    );
   }
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
-
+      backgroundColor: const Color(0xFFFDFCFA),
       body: SafeArea(
-
         child: Center(
-
           child: SingleChildScrollView(
-
-            padding:
-            const EdgeInsets.all(
-              AppSpacing.screen,
-            ),
-
+            padding: const EdgeInsets.symmetric(horizontal: 28),
             child: Form(
-
               key: formKey,
-
               child: Column(
-
-                crossAxisAlignment:
-                CrossAxisAlignment.start,
-
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
 
-                  const Text(
-
-                    'Connexion',
-
-                    style:
-                    AppTextStyles.h1,
-                  ),
-
-                  const SizedBox(
-                    height: 12,
-                  ),
-
-                  const Text(
-
-                    'Connectez-vous à votre compte',
-
-                    style:
-                    AppTextStyles.muted,
-                  ),
-
-                  const SizedBox(
-                    height: 32,
-                  ),
-
-                  AppTextField(
-
-                    controller:
-                    phoneController,
-
-                    label:
-                    'Téléphone',
-
-                    icon:
-                    Icons.phone_outlined,
-
-                    isPhone: true,
-
-                    validator: (value) {
-
-                      if (value == null ||
-                          value
-                              .trim()
-                              .isEmpty) {
-
-                        return 'Téléphone requis';
-                      }
-
-                      if (value.length != 8) {
-
-                        return 'Numéro invalide';
-                      }
-
-                      return null;
-                    },
-                  ),
-
-                  const SizedBox(
-                    height: 18,
-                  ),
-
-                  AppTextField(
-
-                    controller:
-                    passwordController,
-
-                    label:
-                    'Mot de passe',
-
-                    icon:
-                    Icons.lock_outline,
-
-                    isPassword: true,
-
-                    validator: (value) {
-
-                      if (value == null ||
-                          value
-                              .trim()
-                              .isEmpty) {
-
-                        return 'Mot de passe requis';
-                      }
-
-                      if (value.length < 6) {
-
-                        return 'Minimum 6 caractères';
-                      }
-
-                      return null;
-                    },
-                  ),
-
-                  const SizedBox(
-                    height: 28,
-                  ),
-
-                  Obx(() {
-
-                    return PrimaryButton(
-
-                      text:
-                      authController
-                          .isLoading
-                          .value
-
-                          ? 'Chargement...'
-
-                          : 'Se connecter',
-
-                      onPressed:
-                      authController
-                          .isLoading
-                          .value
-
-                          ? null
-
-                          : login,
-                    );
-                  }),
-
-                  const SizedBox(
-                    height: 20,
-                  ),
-
+                  /// Logo
                   Row(
-
-                    mainAxisAlignment:
-                    MainAxisAlignment.center,
-
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-
-                      const Text(
-                        'Pas de compte ?',
-                      ),
-
-                      TextButton(
-
-                        onPressed: () {
-
-                          Get.to(
-                                () =>
-                            const RegisterPage(),
-                          );
-                        },
-
-                        child: const Text(
-                          'Créer un compte',
+                      Container(
+                        width: 48,
+                        height: 48,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF1a1a1a),
+                          borderRadius: BorderRadius.circular(13),
+                        ),
+                        child: const Icon(
+                          Icons.apartment,
+                          color: Color(0xFFC9A86A),
+                          size: 26,
                         ),
                       ),
+                      const SizedBox(width: 12),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'SAKAN',
+                            style: TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.w800,
+                              color: Color(0xFF1a1a1a),
+                              letterSpacing: 0.06,
+                            ),
+                          ),
+                          Text(
+                            'login_subtitle'.tr,
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey,
+                            ),
+                          ),
+                        ],
+                      ),
                     ],
+                  ),
+
+                  const SizedBox(height: 40),
+
+                  /// Phone
+                  TextFormField(
+                    controller: phoneController,
+                    keyboardType: TextInputType.phone,
+                    style: const TextStyle(fontSize: 15),
+                    decoration: _inputDeco(
+                      hint: 'phone'.tr,
+                      icon: Icons.phone_outlined,
+                    ),
+                    validator: (v) {
+                      if (v == null || v.trim().isEmpty) return 'phone_required'.tr;
+                      if (v.length != 8) return 'phone_invalid'.tr;
+                      return null;
+                    },
+                  ),
+
+                  const SizedBox(height: 14),
+
+                  /// Password
+                  TextFormField(
+                    controller: passController,
+                    obscureText: _obscure,
+                    style: const TextStyle(fontSize: 15),
+                    decoration: _inputDeco(
+                      hint: 'password'.tr,
+                      icon: Icons.lock_outline,
+                      suffix: IconButton(
+                        icon: Icon(
+                          _obscure
+                              ? Icons.visibility_off_outlined
+                              : Icons.visibility_outlined,
+                          color: Colors.grey,
+                          size: 20,
+                        ),
+                        onPressed: () =>
+                            setState(() => _obscure = !_obscure),
+                      ),
+                    ),
+                    validator: (v) {
+                      if (v == null || v.trim().isEmpty) return 'password_required'.tr;
+                      if (v.length < 6) return 'password_min'.tr;
+                      return null;
+                    },
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  /// Login button
+                  Obx(() => SizedBox(
+                    width: double.infinity,
+                    height: 54,
+                    child: ElevatedButton(
+                      onPressed:
+                      authController.isLoading.value ? null : login,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF1a1a1a),
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: Text(
+                        authController.isLoading.value
+                            ? 'loading'.tr
+                            : 'login_btn'.tr,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  )),
+
+                  const SizedBox(height: 20),
+
+                  /// Divider
+                  Row(
+                    children: [
+                      const Expanded(
+                          child: Divider(color: Color(0xFFE9E4DA))),
+                      const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 12),
+                        child: Text('ou',
+                            style: TextStyle(
+                                fontSize: 13, color: Colors.grey)),
+                      ),
+                      const Expanded(
+                          child: Divider(color: Color(0xFFE9E4DA))),
+                    ],
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  /// Register
+                  SizedBox(
+                    width: double.infinity,
+                    height: 54,
+                    child: OutlinedButton(
+                      onPressed: () =>
+                          Get.to(() => const RegisterChoosePage()),
+                      style: OutlinedButton.styleFrom(
+                        side: const BorderSide(color: Color(0xFFEAE5DB)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            'no_account'.tr,
+                            style: const TextStyle(
+                                color: Colors.grey, fontSize: 15),
+                          ),
+                          const SizedBox(width: 5),
+                          Text(
+                            'create_account'.tr,
+                            style: const TextStyle(
+                              color: Color(0xFFC9A86A),
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                 ],
               ),
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  InputDecoration _inputDeco({
+    required String hint,
+    required IconData icon,
+    Widget? suffix,
+  }) {
+    return InputDecoration(
+      hintText: hint,
+      hintStyle: const TextStyle(fontSize: 14, color: Colors.grey),
+      prefixIcon: Icon(icon, color: const Color(0xFFC9A86A), size: 22),
+      suffixIcon: suffix,
+      filled: true,
+      fillColor: Colors.white,
+      contentPadding: const EdgeInsets.symmetric(vertical: 16),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: Color(0xFFEAE5DB)),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: Color(0xFFEAE5DB)),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: Color(0xFFC9A86A), width: 1.5),
       ),
     );
   }

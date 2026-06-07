@@ -1,31 +1,32 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/material.dart';
+import 'package:get/get.dart' as getx;
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../constants/app_constants.dart';
 import 'api_endpoints.dart';
+import '../../screens/auth/login_page.dart';
 
-class ApiClient{
+class ApiClient {
 
   ApiClient._();
 
-  ///dio instance
-  static final Dio dio=Dio(
+  static final Dio dio = Dio(
     BaseOptions(
-      baseUrl:ApiEndpoints.baseUrl,
-      connectTimeout:Duration(
-        seconds:AppConstants.connectTimeout,
+      baseUrl: ApiEndpoints.baseUrl,
+      connectTimeout: Duration(
+        seconds: AppConstants.connectTimeout,
       ),
-      receiveTimeout:Duration(
-        seconds:AppConstants.receiveTimeout,
+      receiveTimeout: Duration(
+        seconds: AppConstants.receiveTimeout,
       ),
-      headers:{
-        'Content-Type':'application/json',
+      headers: {
+        'Content-Type': 'application/json',
       },
     ),
   );
 
-  ///initialize api client
-  static Future<void> init()async{
+  static Future<void> init() async {
 
     dio.interceptors.clear();
 
@@ -33,41 +34,48 @@ class ApiClient{
 
       InterceptorsWrapper(
 
-        ///before request
-        onRequest:(options,handler)async{
+        /// قبل كل طلب — إضافة الـ token
+        onRequest: (options, handler) async {
 
-          final prefs=
+          final prefs =
           await SharedPreferences.getInstance();
 
-          final token=
-          prefs.getString(
-            AppConstants.tokenKey,
-          );
+          final token =
+          prefs.getString(AppConstants.tokenKey);
 
-          if(token!=null&&token.isNotEmpty){
-
-            options.headers['Authorization']=
+          if (token != null && token.isNotEmpty) {
+            options.headers['Authorization'] =
             'Bearer $token';
           }
 
           handler.next(options);
         },
 
-        ///response
-        onResponse:(response,handler){
-
+        /// عند النجاح
+        onResponse: (response, handler) {
           handler.next(response);
         },
 
-        ///error handling
-        onError:(error,handler)async{
+        /// عند الخطأ — 401 = token منتهي أو غير صالح
+        onError: (error, handler) async {
 
-          if(error.response?.statusCode==401){
+          if (error.response?.statusCode == 401) {
 
-            final prefs=
+            /// مسح كل البيانات المحفوظة
+            final prefs =
             await SharedPreferences.getInstance();
-
             await prefs.clear();
+
+            /// توجيه لصفحة Login مع إزالة كل الشاشات السابقة
+            getx.Get.offAll(() => const LoginPage());
+
+            /// إشعار للمستخدم
+            getx.Get.snackbar(
+              'Session expirée',
+              'Veuillez vous reconnecter',
+              snackPosition: getx.SnackPosition.BOTTOM,
+              duration: const Duration(seconds: 3),
+            );
           }
 
           handler.next(error);

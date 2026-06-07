@@ -37,7 +37,13 @@ dependencies:
   shared_preferences: ^2.2.2
   image_picker: ^1.1.2
   table_calendar: ^3.1.2
+  qr_flutter: ^4.1.0        # لعرض QR للعميل
+  mobile_scanner: ^5.0.0    # لمسح QR من المالك
+  url_launcher: ^6.2.0
 
+  flutter_localizations:
+    sdk: flutter
+  intl: any
 
 dev_dependencies:
   flutter_test:

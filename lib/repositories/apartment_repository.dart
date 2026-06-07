@@ -1,78 +1,62 @@
 import '../models/apartment_model.dart';
 import '../services/apartment_service.dart';
 
-class ApartmentRepository{
+class ApartmentRepository {
 
-//service
-  final ApartmentService _service=
+  final ApartmentService _service =
   ApartmentService();
 
-//get approved apartments
   Future<List<ApartmentModel>>
-  getApprovedApartments()async{
+  getApprovedApartments() async {
 
-    try{
+    try {
 
-      final apartments=
-      await _service.getApartments();
+      return await _service.getApartments();
 
-      return apartments.where((apartment){
-
-        return apartment.status
-            .toUpperCase()=='APPROVED';
-
-      }).toList();
-
-    }catch(e){
+    } catch (e) {
 
       throw Exception(
         'Failed to load apartments',
       );
-
     }
   }
 
-//get all apartments
+  /// جميع الشقق (بدون فلتر)
   Future<List<ApartmentModel>>
-  getAllApartments()async{
+  getAllApartments() async {
 
-    try{
+    try {
 
-      return await _service
-          .getApartments();
+      return await _service.getApartments();
 
-    }catch(e){
+    } catch (e) {
 
       throw Exception(
         'Failed to load apartments',
       );
-
     }
   }
 
-//get apartment by id
+  /// شقة بالـ id
   Future<ApartmentModel>
   getApartmentById(
       int apartmentId,
-      )async{
+      ) async {
 
-    try{
+    try {
 
       return await _service
-          .getApartmentDetails(
-        apartmentId,
-      );
+          .getApartmentDetails(apartmentId);
 
-    }catch(e){
+    } catch (e) {
 
       throw Exception(
         'Failed to load apartment',
       );
-
     }
   }
 
-//get owner apartments
+  /// شقق المالك
   Future<List<ApartmentModel>>
   getOwnerApartments() async {
 
@@ -89,50 +73,34 @@ class ApartmentRepository{
     }
   }
 
-//search apartments
-  Future<List<ApartmentModel>>
-  searchApartments(
+  /// بحث محلي في القائمة الموجودة (بدون استدعاء API جديد)
+  List<ApartmentModel> searchLocal(
+      List<ApartmentModel> apartments,
       String query,
-      )async{
+      ) {
 
-    try{
-
-      final apartments=
-      await getApprovedApartments();
-
-      final lowerQuery=
-      query.toLowerCase();
-
-      return apartments.where((apartment){
-
-        return apartment.title
-            .toLowerCase()
-            .contains(lowerQuery)
-
-            ||
-
-            apartment.city
-                .toLowerCase()
-                .contains(lowerQuery)
-
-            ||
-
-            apartment.district
-                .toLowerCase()
-                .contains(lowerQuery);
-
-      }).toList();
-
-    }catch(e){
-
-      throw Exception(
-        'Search failed',
-      );
-
+    if (query.trim().isEmpty) {
+      return apartments;
     }
+
+    final lower = query.toLowerCase();
+
+    return apartments.where((a) {
+
+      return a.title
+          .toLowerCase()
+          .contains(lower) ||
+          a.city
+              .toLowerCase()
+              .contains(lower) ||
+          a.district
+              .toLowerCase()
+              .contains(lower);
+
+    }).toList();
   }
 
-//create apartment
+  /// إنشاء شقة
   Future<ApartmentModel>
   createApartment({
     required String title,
@@ -145,52 +113,47 @@ class ApartmentRepository{
     required int bathrooms,
     required double area,
     required List<String> imageUrls,
-  })async{
+  }) async {
 
-    try{
+    try {
 
-      return await _service
-          .createApartment(
-        title:title,
-        description:description,
-        city:city,
-        district:district,
-        pricePerNight:pricePerNight,
-        walletCode:walletCode,
-        rooms:rooms,
-        bathrooms:bathrooms,
-        area:area,
-        imageUrls:imageUrls,
+      return await _service.createApartment(
+        title: title,
+        description: description,
+        city: city,
+        district: district,
+        pricePerNight: pricePerNight,
+        walletCode: walletCode,
+        rooms: rooms,
+        bathrooms: bathrooms,
+        area: area,
+        imageUrls: imageUrls,
       );
 
-    }catch(e){
+    } catch (e) {
 
       throw Exception(
         'Failed to create apartment',
       );
-
     }
   }
 
-//approve apartment
-  Future<void>
-  approveApartment(
+  /// قبول شقة
+  Future<void> approveApartment(
       int apartmentId,
-      )async{
+      ) async {
 
-    try{
+    try {
 
-      await _service
-          .approveApartment(
+      await _service.approveApartment(
         apartmentId,
       );
 
-    }catch(e){
+    } catch (e) {
 
       throw Exception(
         'Failed to approve apartment',
       );
-
     }
   }
 }

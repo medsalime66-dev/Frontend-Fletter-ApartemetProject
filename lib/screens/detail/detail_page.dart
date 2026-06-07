@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../controllers/favorites/favorites_controller.dart';
+
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_text_styles.dart';
@@ -15,457 +17,366 @@ import '../../screens/reservation/reservation_page.dart';
 class DetailPage extends StatelessWidget {
 
   final ApartmentModel apartment;
-
   final bool isOwner;
 
   const DetailPage({
-
     super.key,
-
     required this.apartment,
-
     this.isOwner = false,
   });
 
   @override
   Widget build(BuildContext context) {
 
+    final favController =
+    Get.find<FavoritesController>();
+
     return Scaffold(
 
-      backgroundColor:
-      AppColors.background,
+      backgroundColor: AppColors.background,
 
       body: CustomScrollView(
 
         slivers: [
 
-          /// APP BAR
+          /// ===== APP BAR =====
           SliverAppBar(
 
-            expandedHeight: 340,
-
+            expandedHeight: 360,
             pinned: true,
-
             elevation: 0,
+            backgroundColor: Colors.transparent,
 
-            backgroundColor:
-            AppColors.surface,
-
-            iconTheme:
-            const IconThemeData(
-              color: Colors.white,
+            leading: Padding(
+              padding: const EdgeInsets.all(8),
+              child: CircleAvatar(
+                backgroundColor:
+                Colors.black.withValues(alpha: 0.35),
+                child: const Icon(
+                  Icons.arrow_back,
+                  color: Colors.white,
+                  size: 20,
+                ),
+              ),
             ),
 
-            flexibleSpace:
-            FlexibleSpaceBar(
+            actions: [
+              if (!isOwner)
+                Padding(
+                  padding: const EdgeInsets.all(8),
+                  child: Obx(() {
+                    final isFav =
+                    favController.isFavorite(apartment.id);
+                    return GestureDetector(
+                      onTap: () =>
+                          favController.toggle(apartment),
+                      child: CircleAvatar(
+                        backgroundColor:
+                        Colors.black.withValues(alpha: 0.35),
+                        child: Icon(
+                          isFav
+                              ? Icons.favorite
+                              : Icons.favorite_border,
+                          color: isFav
+                              ? AppColors.danger
+                              : Colors.white,
+                          size: 20,
+                        ),
+                      ),
+                    );
+                  }),
+                ),
+            ],
 
-              background:
-              ApartmentGallery(
-                images:
-                apartment.imageUrls,
+            flexibleSpace: FlexibleSpaceBar(
+              background: ApartmentGallery(
+                images: apartment.imageUrls,
               ),
             ),
           ),
 
-          /// CONTENT
+          /// ===== CONTENT =====
           SliverToBoxAdapter(
 
             child: Padding(
 
-              padding:
-              const EdgeInsets.all(
-                AppSpacing.screen,
-              ),
+              padding: const EdgeInsets.all(AppSpacing.screen),
 
               child: Column(
 
-                crossAxisAlignment:
-                CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
 
                 children: [
 
-                  /// TITLE
-                  Text(
-
-                    apartment.title,
-
-                    style:
-                    AppTextStyles.h1,
-                  ),
-
-                  const SizedBox(
-                    height: 12,
-                  ),
-
-                  /// LOCATION
+                  /// العنوان + الحالة
                   Row(
-
+                    crossAxisAlignment:
+                    CrossAxisAlignment.start,
                     children: [
-
-                      const Icon(
-
-                        Icons.location_on,
-
-                        size: 18,
-
-                        color:
-                        AppColors.primary,
-                      ),
-
-                      const SizedBox(
-                        width: 6,
-                      ),
-
                       Expanded(
-
                         child: Text(
-
-                          "${apartment.city}, ${apartment.district}",
-
-                          style:
-                          AppTextStyles.muted,
+                          apartment.title,
+                          style: AppTextStyles.h1,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.success
+                              .withValues(alpha: 0.12),
+                          borderRadius:
+                          BorderRadius.circular(20),
+                        ),
+                        child: const Text(
+                          'Available',
+                          style: TextStyle(
+                            color: AppColors.success,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 13,
+                          ),
                         ),
                       ),
                     ],
                   ),
 
-                  const SizedBox(
-                    height: 28,
+                  const SizedBox(height: 10),
+
+                  /// الموقع
+                  Row(
+                    children: [
+                      const Icon(
+                        Icons.location_on,
+                        size: 16,
+                        color: AppColors.primary,
+                      ),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Text(
+                          '${apartment.city}, ${apartment.district}',
+                          style: AppTextStyles.muted,
+                        ),
+                      ),
+                    ],
                   ),
 
-                  /// DESCRIPTION
-                  _buildSectionCard(
+                  const SizedBox(height: 24),
 
+                  /// مميزات — 3 بطاقات
+                  Row(
+                    children: [
+                      _buildFeatureBox(
+                        icon: Icons.bed_outlined,
+                        value: '${apartment.rooms}',
+                        label: 'Rooms',
+                      ),
+                      const SizedBox(width: 12),
+                      _buildFeatureBox(
+                        icon: Icons.bathtub_outlined,
+                        value: '${apartment.bathrooms}',
+                        label: 'Bathrooms',
+                      ),
+                      const SizedBox(width: 12),
+                      _buildFeatureBox(
+                        icon: Icons.square_foot,
+                        value: '${apartment.area}',
+                        label: 'm²',
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  /// الوصف
+                  _buildCard(
                     child: Column(
-
                       crossAxisAlignment:
                       CrossAxisAlignment.start,
-
                       children: [
-
                         const Text(
-
                           'Description',
-
-                          style:
-                          AppTextStyles.h3,
+                          style: AppTextStyles.h3,
                         ),
-
-                        const SizedBox(
-                          height: 14,
-                        ),
-
+                        const SizedBox(height: 12),
                         Text(
-
                           apartment.description,
-
-                          style:
-                          AppTextStyles.body,
+                          style: AppTextStyles.body,
                         ),
                       ],
                     ),
                   ),
 
-                  const SizedBox(
-                    height: 24,
-                  ),
+                  const SizedBox(height: 14),
 
-                  /// FEATURES
-                  _buildSectionCard(
-
-                    child: Wrap(
-
-                      spacing: 12,
-
-                      runSpacing: 12,
-
+                  /// المحفظة
+                  _buildCard(
+                    child: Row(
                       children: [
-
-                        AmenityChip(
-
-                          icon:
-                          Icons.bed,
-
-                          label:
-                          "${apartment.rooms} Rooms",
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: AppColors.primary
+                                .withValues(alpha: 0.12),
+                            borderRadius:
+                            BorderRadius.circular(12),
+                          ),
+                          child: const Icon(
+                            Icons.wallet,
+                            color: AppColors.primaryDark,
+                          ),
                         ),
-
-                        AmenityChip(
-
-                          icon:
-                          Icons.bathtub,
-
-                          label:
-                          "${apartment.bathrooms} Bathrooms",
-                        ),
-
-                        AmenityChip(
-
-                          icon:
-                          Icons.square_foot,
-
-                          label:
-                          "${apartment.area} m²",
-                        ),
-
-                        AmenityChip(
-
-                          icon:
-                          Icons.wallet,
-
-                          label:
-                          apartment.walletCode,
+                        const SizedBox(width: 14),
+                        Column(
+                          crossAxisAlignment:
+                          CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Wallet code',
+                              style: AppTextStyles.muted,
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              apartment.walletCode,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 15,
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
                   ),
 
-                  const SizedBox(
-                    height: 24,
-                  ),
+                  const SizedBox(height: 14),
 
-                  /// OWNER CARD
+                  /// المالك
                   if (!isOwner)
-                    _buildSectionCard(
-
-                      child: Column(
-
+                    _buildCard(
+                      child: Row(
                         children: [
-
-                          Row(
-
-                            children: [
-
-                              Container(
-
-                                width: 58,
-                                height: 58,
-
-                                decoration:
-                                BoxDecoration(
-
-                                  color:
-                                  AppColors.primary,
-
-                                  borderRadius:
-                                  BorderRadius.circular(18),
+                          Container(
+                            width: 52,
+                            height: 52,
+                            decoration: BoxDecoration(
+                              color: AppColors.primary,
+                              borderRadius:
+                              BorderRadius.circular(16),
+                            ),
+                            child: const Icon(
+                              Icons.person,
+                              color: Colors.white,
+                              size: 26,
+                            ),
+                          ),
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment:
+                              CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Owner',
+                                  style: AppTextStyles.muted,
                                 ),
-
-                                child:
-                                const Icon(
-
-                                  Icons.person,
-
-                                  color:
-                                  Colors.white,
-
-                                  size: 28,
+                                const SizedBox(height: 2),
+                                Text(
+                                  apartment.ownerName,
+                                  style: AppTextStyles.h3,
                                 ),
-                              ),
-
-                              const SizedBox(
-                                width: 14,
-                              ),
-
-                              Expanded(
-
-                                child: Column(
-
-                                  crossAxisAlignment:
-                                  CrossAxisAlignment.start,
-
+                                const SizedBox(height: 4),
+                                Row(
                                   children: [
-
-                                    const Text(
-
-                                      'Owner',
-
-                                      style:
-                                      AppTextStyles.muted,
+                                    const Icon(
+                                      Icons.phone_outlined,
+                                      size: 14,
+                                      color: AppColors.primary,
                                     ),
-
-                                    const SizedBox(
-                                      height: 4,
-                                    ),
-
+                                    const SizedBox(width: 6),
                                     Text(
-
-                                      apartment.ownerName,
-
-                                      style:
-                                      AppTextStyles.h3,
+                                      apartment.ownerPhone,
+                                      style: AppTextStyles.muted,
                                     ),
                                   ],
                                 ),
-                              ),
-                            ],
-                          ),
-
-                          const SizedBox(
-                            height: 18,
-                          ),
-
-                          Row(
-
-                            children: [
-
-                              const Icon(
-
-                                Icons.phone,
-
-                                color:
-                                AppColors.primary,
-                              ),
-
-                              const SizedBox(
-                                width: 12,
-                              ),
-
-                              Text(
-                                apartment.ownerPhone,
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ],
                       ),
                     ),
 
-                  if (!isOwner)
-                    const SizedBox(
-                      height: 28,
-                    ),
+                  if (!isOwner) const SizedBox(height: 14),
 
-                  /// PRICE + ACTION
+                  /// السعر + زر الحجز
                   Container(
-
-                    padding:
-                    const EdgeInsets.all(
-                      20,
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: AppColors.text,
+                      borderRadius: BorderRadius.circular(24),
                     ),
-
-                    decoration:
-                    BoxDecoration(
-
-                      color:
-                      AppColors.surface,
-
-                      borderRadius:
-                      BorderRadius.circular(
-                        24,
-                      ),
-
-                      border:
-                      Border.all(
-                        color:
-                        AppColors.border,
-                      ),
-                    ),
-
                     child: Column(
-
                       children: [
-
                         Row(
-
                           children: [
-
                             const Text(
-
-                              'Price Per Night',
-
-                              style:
-                              AppTextStyles.muted,
+                              'Price per night',
+                              style: TextStyle(
+                                color: Colors.white60,
+                                fontSize: 14,
+                              ),
                             ),
-
                             const Spacer(),
-
                             Text(
-
-                              "${apartment.pricePerNight} MRU",
-
-                              style:
-                              const TextStyle(
-
-                                fontSize: 25,
-
-                                fontWeight:
-                                FontWeight.w900,
-
-                                color:
-                                AppColors.primaryDark,
+                              '${apartment.pricePerNight} MRU',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 26,
+                                fontWeight: FontWeight.w900,
                               ),
                             ),
                           ],
                         ),
-
-                        const SizedBox(
-                          height: 24,
-                        ),
-
+                        const SizedBox(height: 20),
                         SizedBox(
-
-                          width:
-                          double.infinity,
-
-                          height: 58,
-
+                          width: double.infinity,
+                          height: 56,
                           child: ElevatedButton(
-
                             onPressed: () {
-
                               if (isOwner) {
-
                                 Get.snackbar(
-
-                                  'Edit',
-
-                                  'Edit page coming soon',
-
+                                  'Soon',
+                                  'Edit apartment coming soon',
                                   snackPosition:
                                   SnackPosition.BOTTOM,
                                 );
-
                                 return;
                               }
-
                               Get.to(
                                     () => ReservationPage(
-                                  apartment:
-                                  apartment,
+                                  apartment: apartment,
                                 ),
                               );
                             },
-
-                            style:
-                            ElevatedButton.styleFrom(
-
-                              backgroundColor:
-                              AppColors.primary,
-
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.primary,
                               elevation: 0,
-
-                              shape:
-                              RoundedRectangleBorder(
-
+                              shape: RoundedRectangleBorder(
                                 borderRadius:
-                                BorderRadius.circular(
-                                  18,
-                                ),
+                                BorderRadius.circular(16),
                               ),
                             ),
-
                             child: Text(
-
                               isOwner
                                   ? 'Edit Apartment'
-                                  : 'Reserve',
-
+                                  : 'Reserve Now',
                               style: const TextStyle(
-
-                                fontSize: 18,
-
-                                fontWeight:
-                                FontWeight.bold,
+                                fontSize: 17,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
                               ),
                             ),
                           ),
@@ -474,9 +385,7 @@ class DetailPage extends StatelessWidget {
                     ),
                   ),
 
-                  const SizedBox(
-                    height: 40,
-                  ),
+                  const SizedBox(height: 40),
                 ],
               ),
             ),
@@ -486,33 +395,49 @@ class DetailPage extends StatelessWidget {
     );
   }
 
-  Widget _buildSectionCard({
-    required Widget child,
+  Widget _buildFeatureBox({
+    required IconData icon,
+    required String value,
+    required String label,
   }) {
-
-    return Container(
-
-      width: double.infinity,
-
-      padding:
-      const EdgeInsets.all(20),
-
-      decoration:
-      BoxDecoration(
-
-        color:
-        AppColors.surface,
-
-        borderRadius:
-        BorderRadius.circular(24),
-
-        border:
-        Border.all(
-          color:
-          AppColors.border,
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+          vertical: 16,
+          horizontal: 12,
+        ),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: AppColors.border),
+        ),
+        child: Column(
+          children: [
+            Icon(icon, color: AppColors.primary, size: 22),
+            const SizedBox(height: 8),
+            Text(
+              value,
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
+            ),
+            Text(label, style: AppTextStyles.muted),
+          ],
         ),
       ),
+    );
+  }
 
+  Widget _buildCard({required Widget child}) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppColors.border),
+      ),
       child: child,
     );
   }
