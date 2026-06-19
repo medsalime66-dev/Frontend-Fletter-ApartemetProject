@@ -8,7 +8,7 @@ class OwnerRedirectPage extends StatelessWidget {
   const OwnerRedirectPage({super.key});
 
   static const String _registerUrl =
-      'http://192.168.100.41:8080/owner/register';
+      'http://backend-fletter-apartemetproject-production.up.railway.app/owner/register';
 
   Future<void> _openWeb() async {
     final uri = Uri.parse(_registerUrl);

@@ -6,7 +6,7 @@ class AppConfig {
   /// للتطوير المحلي: استخدم IP الخاص بجهازك
   /// للإنتاج: ضع رابط السيرفر الحقيقي
   static const String baseUrl =
-      'http://192.168.100.41:8080/api';
+      'http://backend-fletter-apartemetproject-production.up.railway.app/api';
 
   static String get serverUrl {
     return baseUrl.replaceAll('/api', '');
