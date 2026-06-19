@@ -156,4 +156,63 @@ class ApartmentRepository {
       );
     }
   }
+
+  /// تعديل شقة
+  Future<ApartmentModel>
+  updateApartment({
+    required int id,
+    required String title,
+    required String description,
+    required String city,
+    required String district,
+    required double pricePerNight,
+    required String walletCode,
+    required int rooms,
+    required int bathrooms,
+    required double area,
+    required List<String> imageUrls,
+  }) async {
+
+    try {
+
+      return await _service.updateApartment(
+        id: id,
+        title: title,
+        description: description,
+        city: city,
+        district: district,
+        pricePerNight: pricePerNight,
+        walletCode: walletCode,
+        rooms: rooms,
+        bathrooms: bathrooms,
+        area: area,
+        imageUrls: imageUrls,
+      );
+
+    } catch (e) {
+
+      throw Exception(
+        'Failed to update apartment',
+      );
+    }
+  }
+
+  /// حذف شقة
+  Future<void> deleteApartment(
+      int id,
+      ) async {
+
+    try {
+
+      await _service.deleteApartment(
+        id,
+      );
+
+    } catch (e) {
+
+      throw Exception(
+        'Failed to delete apartment',
+      );
+    }
+  }
 }

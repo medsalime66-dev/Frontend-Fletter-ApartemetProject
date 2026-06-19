@@ -10,6 +10,7 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_text_styles.dart';
 
+import '../../models/apartment_model.dart';
 import '../../repositories/apartment_repository.dart';
 
 import '../../widgets/common/app_text_field.dart';
@@ -17,8 +18,11 @@ import '../../widgets/common/primary_button.dart';
 
 class CreateApartmentPage extends StatefulWidget{
 
+  final ApartmentModel? editApartment;
+
   const CreateApartmentPage({
     super.key,
+    this.editApartment,
   });
 
   @override
@@ -66,6 +70,30 @@ class _CreateApartmentPageState
 
   List<File> images=[];
 
+  bool get isEditing=>
+      widget.editApartment!=null;
+
+  @override
+  void initState(){
+    super.initState();
+
+    final apartment=
+    widget.editApartment;
+
+    if(apartment!=null){
+
+      titleController.text=apartment.title;
+      descriptionController.text=apartment.description;
+      cityController.text=apartment.city;
+      districtController.text=apartment.district;
+      priceController.text='${apartment.pricePerNight}';
+      walletController.text=apartment.walletCode;
+      roomsController.text='${apartment.rooms}';
+      bathroomsController.text='${apartment.bathrooms}';
+      areaController.text='${apartment.area}';
+    }
+  }
+
   ///pick images
   Future<void> pickImages()async{
 
@@ -110,10 +138,10 @@ class _CreateApartmentPageState
         .data['fileUrl'];
   }
 
-  ///create apartment
+  ///create or update apartment
   Future<void> createApartment()async{
 
-    if(images.isEmpty){
+    if(images.isEmpty&&!isEditing){
 
       ScaffoldMessenger.of(context)
           .showSnackBar(
@@ -134,10 +162,12 @@ class _CreateApartmentPageState
 
     try{
 
+      ///upload new images, otherwise keep existing ones
       final imageUrls=
-      <String>[];
+      images.isEmpty
+          ?widget.editApartment!.imageUrls
+          :<String>[];
 
-      ///upload all images
       for(final image in images){
 
         final url=
@@ -146,47 +176,96 @@ class _CreateApartmentPageState
         imageUrls.add(url);
       }
 
-      ///create apartment
-      await repository
-          .createApartment(
+      if(isEditing){
 
-        title:
-        titleController.text.trim(),
+        ///update apartment
+        await repository
+            .updateApartment(
 
-        description:
-        descriptionController.text.trim(),
+          id:widget.editApartment!.id,
 
-        city:
-        cityController.text.trim(),
+          title:
+          titleController.text.trim(),
 
-        district:
-        districtController.text.trim(),
+          description:
+          descriptionController.text.trim(),
 
-        pricePerNight:
-        double.parse(
-          priceController.text.trim(),
-        ),
+          city:
+          cityController.text.trim(),
 
-        walletCode:
-        walletController.text.trim(),
+          district:
+          districtController.text.trim(),
 
-        rooms:
-        int.parse(
-          roomsController.text.trim(),
-        ),
+          pricePerNight:
+          double.parse(
+            priceController.text.trim(),
+          ),
 
-        bathrooms:
-        int.parse(
-          bathroomsController.text.trim(),
-        ),
+          walletCode:
+          walletController.text.trim(),
 
-        area:
-        double.parse(
-          areaController.text.trim(),
-        ),
+          rooms:
+          int.parse(
+            roomsController.text.trim(),
+          ),
 
-        imageUrls:imageUrls,
-      );
+          bathrooms:
+          int.parse(
+            bathroomsController.text.trim(),
+          ),
+
+          area:
+          double.parse(
+            areaController.text.trim(),
+          ),
+
+          imageUrls:imageUrls,
+        );
+
+      }else{
+
+        ///create apartment
+        await repository
+            .createApartment(
+
+          title:
+          titleController.text.trim(),
+
+          description:
+          descriptionController.text.trim(),
+
+          city:
+          cityController.text.trim(),
+
+          district:
+          districtController.text.trim(),
+
+          pricePerNight:
+          double.parse(
+            priceController.text.trim(),
+          ),
+
+          walletCode:
+          walletController.text.trim(),
+
+          rooms:
+          int.parse(
+            roomsController.text.trim(),
+          ),
+
+          bathrooms:
+          int.parse(
+            bathroomsController.text.trim(),
+          ),
+
+          area:
+          double.parse(
+            areaController.text.trim(),
+          ),
+
+          imageUrls:imageUrls,
+        );
+      }
 
       if(!mounted){
         return;
@@ -197,9 +276,11 @@ class _CreateApartmentPageState
       ScaffoldMessenger.of(context)
           .showSnackBar(
 
-        const SnackBar(
+        SnackBar(
           content:Text(
-            'Apartment created successfully',
+            isEditing
+                ?'Apartment updated successfully'
+                :'Apartment created successfully',
           ),
         ),
       );
@@ -234,8 +315,10 @@ class _CreateApartmentPageState
 
       appBar:AppBar(
 
-        title:const Text(
-          'Create Apartment',
+        title:Text(
+          isEditing
+              ?'Edit Apartment'
+              :'Create Apartment',
         ),
       ),
 
@@ -252,8 +335,10 @@ class _CreateApartmentPageState
 
           children:[
 
-            const Text(
-              'New Apartment',
+            Text(
+              isEditing
+                  ?'Edit Apartment'
+                  :'New Apartment',
               style:AppTextStyles.h1,
             ),
 
@@ -426,7 +511,9 @@ class _CreateApartmentPageState
 
               text:isLoading
                   ?'Loading...'
-                  :'Create Apartment',
+                  :isEditing
+                      ?'Update Apartment'
+                      :'Create Apartment',
 
               onPressed:
               isLoading

@@ -152,6 +152,10 @@ class AppTranslations extends Translations {
       'select_images': 'Sélectionner des images',
       'select_one_image': 'Sélectionnez au moins une image',
       'apartment_created': 'Appartement créé avec succès',
+      'delete': 'Supprimer',
+      'delete_apartment': 'Supprimer l\'appartement',
+      'delete_apartment_confirm': 'Voulez-vous vraiment supprimer cet appartement ?',
+      'apartment_deleted': 'Appartement supprimé avec succès',
     },
 
     /// ===== عربية =====
@@ -301,6 +305,10 @@ class AppTranslations extends Translations {
       'select_images': 'اختر الصور',
       'select_one_image': 'اختر صورة واحدة على الأقل',
       'apartment_created': 'تم إنشاء الشقة بنجاح',
+      'delete': 'حذف',
+      'delete_apartment': 'حذف الشقة',
+      'delete_apartment_confirm': 'هل أنت متأكد من حذف هذه الشقة؟',
+      'apartment_deleted': 'تم حذف الشقة بنجاح',
     },
   };
 }

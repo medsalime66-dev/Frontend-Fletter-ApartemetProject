@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../controllers/apartment/apartment_controller.dart';
 import '../../controllers/favorites/favorites_controller.dart';
 
 import '../../core/theme/app_colors.dart';
@@ -9,9 +10,12 @@ import '../../core/theme/app_text_styles.dart';
 
 import '../../models/apartment_model.dart';
 
+import '../../repositories/apartment_repository.dart';
+
 import '../../widgets/apartment/apartment_gallery.dart';
 import '../../widgets/apartment/amenity_chip.dart';
 
+import '../../screens/owner/create_apartment_page.dart';
 import '../../screens/reservation/reservation_page.dart';
 
 class DetailPage extends StatelessWidget {
@@ -345,14 +349,15 @@ class DetailPage extends StatelessWidget {
                           width: double.infinity,
                           height: 56,
                           child: ElevatedButton(
-                            onPressed: () {
+                            onPressed: () async {
                               if (isOwner) {
-                                Get.snackbar(
-                                  'Soon',
-                                  'Edit apartment coming soon',
-                                  snackPosition:
-                                  SnackPosition.BOTTOM,
+                                await Get.to(
+                                      () => CreateApartmentPage(
+                                    editApartment: apartment,
+                                  ),
                                 );
+                                Get.find<ApartmentController>()
+                                    .loadOwnerApartments();
                                 return;
                               }
                               Get.to(
@@ -385,6 +390,35 @@ class DetailPage extends StatelessWidget {
                     ),
                   ),
 
+                  if (isOwner) const SizedBox(height: 14),
+
+                  if (isOwner)
+                    SizedBox(
+                      width: double.infinity,
+                      height: 56,
+                      child: OutlinedButton(
+                        onPressed: () => _confirmDelete(context),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: AppColors.danger,
+                          side: const BorderSide(
+                            color: AppColors.danger,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius:
+                            BorderRadius.circular(16),
+                          ),
+                        ),
+                        child: Text(
+                          'delete'.tr,
+                          style: const TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.danger,
+                          ),
+                        ),
+                      ),
+                    ),
+
                   const SizedBox(height: 40),
                 ],
               ),
@@ -393,6 +427,57 @@ class DetailPage extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  Future<void> _confirmDelete(BuildContext context) async {
+
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text('delete_apartment'.tr),
+        content: Text('delete_apartment_confirm'.tr),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text('cancel'.tr),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(
+              'delete'.tr,
+              style: const TextStyle(color: AppColors.danger),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm != true) {
+      return;
+    }
+
+    try {
+
+      await ApartmentRepository().deleteApartment(apartment.id);
+
+      Get.back();
+
+      Get.find<ApartmentController>().loadOwnerApartments();
+
+      Get.snackbar(
+        'delete_apartment'.tr,
+        'apartment_deleted'.tr,
+        snackPosition: SnackPosition.BOTTOM,
+      );
+
+    } catch (e) {
+
+      Get.snackbar(
+        'failed'.tr,
+        e.toString(),
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    }
   }
 
   Widget _buildFeatureBox({

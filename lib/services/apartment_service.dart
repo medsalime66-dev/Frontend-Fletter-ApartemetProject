@@ -181,4 +181,95 @@ class ApartmentService {
       );
     }
   }
+
+  /// update apartment
+  Future<ApartmentModel>
+  updateApartment({
+
+    required int id,
+
+    required String title,
+
+    required String description,
+
+    required String city,
+
+    required String district,
+
+    required double pricePerNight,
+
+    required String walletCode,
+
+    required int rooms,
+
+    required int bathrooms,
+
+    required double area,
+
+    required List<String> imageUrls,
+
+  }) async {
+
+    try {
+
+      final response =
+      await _dio.put(
+
+        '/apartments/$id',
+
+        data: {
+
+          'title': title,
+
+          'description': description,
+
+          'city': city,
+
+          'district': district,
+
+          'pricePerNight': pricePerNight,
+
+          'walletCode': walletCode,
+
+          'rooms': rooms,
+
+          'bathrooms': bathrooms,
+
+          'area': area,
+
+          'imageUrls': imageUrls,
+        },
+      );
+
+      return ApartmentModel
+          .fromJson(
+        response.data,
+      );
+
+    } catch (e) {
+
+      throw Exception(
+        'Failed to update apartment',
+      );
+    }
+  }
+
+  /// delete apartment
+  Future<void> deleteApartment(
+      int id,
+      ) async {
+
+    try {
+
+      await _dio.delete(
+        '/apartments/$id',
+      );
+
+    } catch (e) {
+
+      throw Exception(
+        'Failed to delete apartment',
+      );
+    }
+  }
 }

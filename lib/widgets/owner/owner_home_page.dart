@@ -99,6 +99,24 @@ class _OwnerHomePageState extends State<OwnerHomePage> {
         ],
       ),
 
+      floatingActionButton: _currentIndex == 0
+          ? FloatingActionButton.extended(
+              backgroundColor: AppColors.primary,
+              onPressed: () async {
+                await Get.to(() => const CreateApartmentPage());
+                apartmentController.loadOwnerApartments();
+              },
+              icon: const Icon(Icons.add, color: Colors.white),
+              label: Text(
+                'add_apartment'.tr,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            )
+          : null,
+
       body: IndexedStack(
         index: _currentIndex,
         children: const [
@@ -479,6 +497,57 @@ class _ProfileTab extends StatelessWidget {
 
         const SizedBox(height: 28),
 
+        /// زر إضافة شقة
+        GestureDetector(
+          onTap: () async {
+            await Get.to(() => const CreateApartmentPage());
+            Get.find<ApartmentController>().loadOwnerApartments();
+          },
+          child: Container(
+            padding: const EdgeInsets.all(18),
+            decoration: BoxDecoration(
+              color: AppColors.primary.withValues(alpha: 0.08),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: const Icon(Icons.add_home_outlined,
+                      color: AppColors.primary),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'add_apartment'.tr,
+                        style: const TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.primaryDark,
+                        ),
+                      ),
+                      const SizedBox(height: 3),
+                      Text(
+                        'my_apartments'.tr,
+                        style: const TextStyle(color: Colors.grey),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+
+        const SizedBox(height: 16),
+
         /// زر تسجيل الخروج
         GestureDetector(
           onTap: () => _logout(context),
@@ -529,27 +598,6 @@ class _ProfileTab extends StatelessWidget {
 
         const SizedBox(height: 100),
       ],
-    );
-  }
-}
-
-/// ===== FAB — إضافة شقة =====
-extension OwnerFAB on _ApartmentsTab {
-  Widget buildFAB() {
-    return FloatingActionButton.extended(
-      backgroundColor: AppColors.primary,
-      onPressed: () async {
-        await Get.to(() => const CreateApartmentPage());
-        Get.find<ApartmentController>().loadOwnerApartments();
-      },
-      icon: const Icon(Icons.add, color: Colors.white),
-      label: Text(
-        'add_apartment'.tr,
-        style: const TextStyle(
-          color: Colors.white,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
     );
   }
 }
