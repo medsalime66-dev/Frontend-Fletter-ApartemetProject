@@ -115,10 +115,12 @@ class _RegisterPageState extends State<RegisterPage> {
                         hint: 'full_name'.tr,
                         icon: Icons.person_outline,
                       ),
-                      validator: (v) =>
-                      (v == null || v.trim().isEmpty)
-                          ? 'Ce champ est requis'
-                          : null,
+                      validator: (v) {
+                        if (v == null || v.trim().isEmpty)
+                          return 'name_required'.tr;
+                        if (v.trim().length < 3) return 'name_min'.tr;
+                        return null;
+                      },
                     ),
 
                     const SizedBox(height: 14),

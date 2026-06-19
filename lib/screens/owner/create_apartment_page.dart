@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart' hide FormData, MultipartFile;
 import 'package:image_picker/image_picker.dart';
 
 import '../../core/network/api_client.dart';
@@ -32,6 +33,9 @@ class CreateApartmentPage extends StatefulWidget{
 
 class _CreateApartmentPageState
     extends State<CreateApartmentPage>{
+
+  final formKey=
+  GlobalKey<FormState>();
 
   final repository=
   ApartmentRepository();
@@ -94,6 +98,47 @@ class _CreateApartmentPageState
     }
   }
 
+  String? _requiredValidator(String? v){
+    if(v==null||v.trim().isEmpty){
+      return 'field_required'.tr;
+    }
+    return null;
+  }
+
+  String? _priceValidator(String? v){
+    if(v==null||v.trim().isEmpty){
+      return 'field_required'.tr;
+    }
+    final value=double.tryParse(v.trim());
+    if(value==null){
+      return 'invalid_number'.tr;
+    }
+    if(value<=0){
+      return 'price_invalid'.tr;
+    }
+    return null;
+  }
+
+  String? _integerValidator(String? v){
+    if(v==null||v.trim().isEmpty){
+      return 'field_required'.tr;
+    }
+    if(int.tryParse(v.trim())==null){
+      return 'invalid_number'.tr;
+    }
+    return null;
+  }
+
+  String? _numberValidator(String? v){
+    if(v==null||v.trim().isEmpty){
+      return 'field_required'.tr;
+    }
+    if(double.tryParse(v.trim())==null){
+      return 'invalid_number'.tr;
+    }
+    return null;
+  }
+
   ///pick images
   Future<void> pickImages()async{
 
@@ -141,14 +186,18 @@ class _CreateApartmentPageState
   ///create or update apartment
   Future<void> createApartment()async{
 
+    if(!formKey.currentState!.validate()){
+      return;
+    }
+
     if(images.isEmpty&&!isEditing){
 
       ScaffoldMessenger.of(context)
           .showSnackBar(
 
-        const SnackBar(
+        SnackBar(
           content:Text(
-            'Select at least one image',
+            'select_image'.tr,
           ),
         ),
       );
@@ -328,7 +377,11 @@ class _CreateApartmentPageState
           AppSpacing.screen,
         ),
 
-        child:Column(
+        child:Form(
+
+          key:formKey,
+
+          child:Column(
 
           crossAxisAlignment:
           CrossAxisAlignment.start,
@@ -431,6 +484,7 @@ class _CreateApartmentPageState
               controller:titleController,
               label:'Title',
               icon:Icons.home_outlined,
+              validator:_requiredValidator,
             ),
 
             const SizedBox(height:14),
@@ -441,6 +495,7 @@ class _CreateApartmentPageState
               label:'Description',
               icon:Icons.description_outlined,
               maxLines:4,
+              validator:_requiredValidator,
             ),
 
             const SizedBox(height:14),
@@ -449,6 +504,7 @@ class _CreateApartmentPageState
               controller:cityController,
               label:'City',
               icon:Icons.location_city,
+              validator:_requiredValidator,
             ),
 
             const SizedBox(height:14),
@@ -458,6 +514,7 @@ class _CreateApartmentPageState
               districtController,
               label:'District',
               icon:Icons.map_outlined,
+              validator:_requiredValidator,
             ),
 
             const SizedBox(height:14),
@@ -467,6 +524,7 @@ class _CreateApartmentPageState
               label:'Price Per Night',
               icon:Icons.attach_money,
               isNumeric:true,
+              validator:_priceValidator,
             ),
 
             const SizedBox(height:14),
@@ -475,6 +533,7 @@ class _CreateApartmentPageState
               controller:walletController,
               label:'Wallet Code',
               icon:Icons.wallet,
+              validator:_requiredValidator,
             ),
 
             const SizedBox(height:14),
@@ -484,6 +543,7 @@ class _CreateApartmentPageState
               label:'Rooms',
               icon:Icons.bed_outlined,
               isNumeric:true,
+              validator:_integerValidator,
             ),
 
             const SizedBox(height:14),
@@ -494,6 +554,7 @@ class _CreateApartmentPageState
               label:'Bathrooms',
               icon:Icons.bathtub_outlined,
               isNumeric:true,
+              validator:_integerValidator,
             ),
 
             const SizedBox(height:14),
@@ -503,6 +564,7 @@ class _CreateApartmentPageState
               label:'Area',
               icon:Icons.square_foot,
               isNumeric:true,
+              validator:_numberValidator,
             ),
 
             const SizedBox(height:30),
@@ -521,6 +583,7 @@ class _CreateApartmentPageState
                   :createApartment,
             ),
           ],
+        ),
         ),
       ),
     );
